@@ -1,0 +1,2517 @@
+Subject: [PATCH] 2.2.3 修复
+---
+Index: ambari-common/src/main/python/resource_management/libraries/functions/setup_ranger_plugin_xml.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-common/src/main/python/resource_management/libraries/functions/setup_ranger_plugin_xml.py b/ambari-common/src/main/python/resource_management/libraries/functions/setup_ranger_plugin_xml.py
+--- a/ambari-common/src/main/python/resource_management/libraries/functions/setup_ranger_plugin_xml.py	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-common/src/main/python/resource_management/libraries/functions/setup_ranger_plugin_xml.py	(date 1770169474891)
+@@ -59,6 +59,53 @@
+                         cred_setup_prefix_override=None,
+                         plugin_home=None,
+                         setup_plugin_keystore=True):
++    Logger.info("=========== Ttbigdata debug logs start ===========")
++
++    Logger.info(format("""
++      setup_ranger_plugin args =>
++        component_select_name={component_select_name}
++        service_name={service_name}
++        previous_jdbc_jar={previous_jdbc_jar}
++        component_downloaded_custom_connector={component_downloaded_custom_connector}
++        component_driver_curl_source={component_driver_curl_source}
++        component_driver_curl_target={component_driver_curl_target}
++        java_home={java_home}
++        repo_name={repo_name}
++        plugin_repo_dict={plugin_repo_dict}
++        ranger_env_properties={ranger_env_properties}
++        plugin_properties={plugin_properties}
++        policy_user={policy_user}
++        policymgr_mgr_url={policymgr_mgr_url}
++        plugin_enabled={plugin_enabled}
++        conf_dict={conf_dict}
++        component_user={component_user}
++        component_group={component_group}
++        cache_service_list={cache_service_list}
++        plugin_audit_properties={plugin_audit_properties}
++        plugin_audit_attributes={plugin_audit_attributes}
++        plugin_security_properties={plugin_security_properties}
++        plugin_security_attributes={plugin_security_attributes}
++        plugin_policymgr_ssl_properties={plugin_policymgr_ssl_properties}
++        plugin_policymgr_ssl_attributes={plugin_policymgr_ssl_attributes}
++        component_list={component_list}
++        audit_db_is_enabled={audit_db_is_enabled}
++        credential_file={credential_file}
++        xa_audit_db_password={xa_audit_db_password}
++        ssl_truststore_password={ssl_truststore_password}
++        ssl_keystore_password={ssl_keystore_password}
++        api_version={api_version}
++        stack_version_override={stack_version_override}
++        skip_if_rangeradmin_down={skip_if_rangeradmin_down}
++        is_security_enabled={is_security_enabled}
++        is_stack_supports_ranger_kerberos={is_stack_supports_ranger_kerberos}
++        component_user_principal={component_user_principal}
++        component_user_keytab={component_user_keytab}
++        cred_lib_path_override={cred_lib_path_override}
++        cred_setup_prefix_override={cred_setup_prefix_override}
++        plugin_home={plugin_home}
++        setup_plugin_keystore={setup_plugin_keystore}
++      """))
++    Logger.info("=========== Ttbigdata debug logs end ===========")
+     bigtop_select_version = Script.get_stack_version().replace(".", "_")
+     ranger_component_name = format('ranger_{bigtop_select_version}-{service_name}-plugin')
+ 
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-ugsync-site.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-ugsync-site.xml b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-ugsync-site.xml
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-ugsync-site.xml	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-ugsync-site.xml	(date 1770858668756)
+@@ -203,10 +203,14 @@
+ 
+   <property>
+     <name>ranger.usersync.ldap.searchBase</name>
+-    <value>dc=hadoop,dc=apache,dc=org</value>
+-    <description>"# search base for users and groups
+-# sample value would be dc=hadoop,dc=apache,dc=org
+-# From Ranger Release 0.6.0 multiple Ous can be configured with ; (semicolon) separated"</description>
++    <value>cn=users,cn=accounts,dc=test,dc=com</value>
++    <description>
++      【TTBigdata 定制@since 2.2.3】
++      【LDAP 搜索基准 DN】UserSync 搜索用户与用户组的起始目录（Base DN）
++      - 用途：指定 LDAP 查询的 baseDN，用于查找用户/组对象
++      - 示例：cn=users,cn=accounts,dc=test,dc=com
++      - 说明：从 Ranger 0.6.0 起支持配置多个 Base DN/OU，使用英文分号（;）分隔（例如：ou=users,dc=test,dc=com;ou=groups,dc=test,dc=com）
++    </description>
+     <value-attributes>
+       <empty-value-valid>true</empty-value-valid>
+     </value-attributes>
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/setup_ranger_xml.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/setup_ranger_xml.py b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/setup_ranger_xml.py
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/setup_ranger_xml.py	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/setup_ranger_xml.py	(date 1770816079272)
+@@ -195,6 +195,25 @@
+     if 'ranger.ha.spnego.kerberos.keytab' in ranger_admin_site_copy:
+         ranger_admin_site_copy['ranger.spnego.kerberos.keytab'] = ranger_admin_site_copy[
+             'ranger.ha.spnego.kerberos.keytab']
++        ranger_admin_site_copy['ranger.ha.spnego.kerberos.principal'] = params.ranger_spnego_kerberos_principal
++
++    # 【TTBigdata 定制@since 2.2.3】
++    # Ranger Admin 选择 LDAP 模式时：
++    # - 强制移除 ranger.ldap.ad.* 相关参数，避免被错误分支/兼容逻辑干扰
++    # - 同时清掉 dnpattern，强制走 search（避免 dnpattern 绑死 DN 造成认证失败或重复匹配）
++    for k in list(ranger_admin_site_copy.keys()):
++      if k.startswith('ranger.ldap.ad.'):
++        ranger_admin_site_copy.pop(k, None)
++
++    # 【TTBigdata 定制@since 2.2.3】清掉 dnpattern，强制走 search
++    ranger_admin_site_copy.pop('ranger.ldap.user.dnpattern', None)
++
++    # 如果返回false 则执行
++    if not params.is_ranger_ha_enabled:
++      ranger_admin_site_copy.pop('ranger.ha.spnego.kerberos.principal',None)
++      ranger_admin_site_copy.pop('ranger.ha.spnego.kerberos.keytab',None)
++      ranger_admin_site_copy['ranger.spnego.kerberos.principal']=params.ranger_spnego_kerberos_principal
++      ranger_admin_site_copy['ranger.spnego.kerberos.keytab']='/etc/security/keytabs/spnego.service.keytab'
+ 
+     XmlConfig("ranger-admin-site.xml",
+               conf_dir=ranger_conf,
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KAFKA/package/scripts/params.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KAFKA/package/scripts/params.py b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KAFKA/package/scripts/params.py
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KAFKA/package/scripts/params.py	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KAFKA/package/scripts/params.py	(date 1771228745386)
+@@ -18,6 +18,10 @@
+ 
+ """
+ import os
++import re
++from ensurepip import bootstrap
++
++from resource_management import Logger
+ from resource_management.libraries.functions import format
+ from resource_management.libraries.script.script import Script
+ from resource_management.libraries.functions.version import format_stack_version
+@@ -35,7 +39,8 @@
+ from resource_management.libraries.functions import upgrade_summary
+ from resource_management.libraries.functions import get_kinit_path
+ from resource_management.libraries.functions.get_not_managed_resources import get_not_managed_resources
+-from resource_management.libraries.functions.setup_ranger_plugin_xml import get_audit_configs, generate_ranger_service_config
++from resource_management.libraries.functions.setup_ranger_plugin_xml import get_audit_configs, \
++  generate_ranger_service_config
+ 
+ # server configurations
+ config = Script.get_config()
+@@ -54,10 +59,14 @@
+ # get the correct version to use for checking stack features
+ version_for_stack_feature_checks = get_stack_feature_version(config)
+ 
+-stack_supports_ranger_kerberos = check_stack_feature(StackFeature.RANGER_KERBEROS_SUPPORT, version_for_stack_feature_checks)
+-stack_supports_ranger_audit_db = check_stack_feature(StackFeature.RANGER_AUDIT_DB_SUPPORT, version_for_stack_feature_checks)
+-stack_supports_core_site_for_ranger_plugin = check_stack_feature(StackFeature.CORE_SITE_FOR_RANGER_PLUGINS_SUPPORT, version_for_stack_feature_checks)
+-stack_supports_kafka_env_include_ranger_script = check_stack_feature(StackFeature.KAFKA_ENV_INCLUDE_RANGER_SCRIPT, version_for_stack_feature_checks)
++stack_supports_ranger_kerberos = check_stack_feature(StackFeature.RANGER_KERBEROS_SUPPORT,
++                                                     version_for_stack_feature_checks)
++stack_supports_ranger_audit_db = check_stack_feature(StackFeature.RANGER_AUDIT_DB_SUPPORT,
++                                                     version_for_stack_feature_checks)
++stack_supports_core_site_for_ranger_plugin = check_stack_feature(StackFeature.CORE_SITE_FOR_RANGER_PLUGINS_SUPPORT,
++                                                                 version_for_stack_feature_checks)
++stack_supports_kafka_env_include_ranger_script = check_stack_feature(StackFeature.KAFKA_ENV_INCLUDE_RANGER_SCRIPT,
++                                                                     version_for_stack_feature_checks)
+ 
+ # When downgrading the 'version' is pointing to the downgrade-target version
+ # downgrade_from_version provides the source-version the downgrade is happening from
+@@ -67,7 +76,7 @@
+ 
+ # default kafka parameters
+ kafka_home = '/usr/lib/kafka'
+-kafka_bin = kafka_home+'/bin/kafka'
++kafka_bin = kafka_home + '/bin/kafka'
+ conf_dir = "/etc/kafka/conf"
+ limits_conf_dir = "/etc/security/limits.d"
+ 
+@@ -81,7 +90,7 @@
+ 
+ # parameters for 2.2+
+ if stack_version_formatted and check_stack_feature(StackFeature.ROLLING_UPGRADE, stack_version_formatted):
+-  kafka_home = os.path.join(stack_root,  "current", "kafka-broker")
++  kafka_home = os.path.join(stack_root, "current", "kafka-broker")
+   kafka_bin = os.path.join(kafka_home, "bin", "kafka")
+   conf_dir = os.path.join(kafka_home, "config")
+ kafka_start_cmd = format('{kafka_home}/bin/kafka-server-start.sh {conf_dir}/server.properties')
+@@ -111,19 +120,19 @@
+ all_hosts = default("/clusterHostInfo/all_hosts", [])
+ all_racks = default("/clusterHostInfo/all_racks", [])
+ 
+-#Kafka log4j
+-kafka_log_maxfilesize = default('/configurations/kafka-log4j/kafka_log_maxfilesize',256)
+-kafka_log_maxbackupindex = default('/configurations/kafka-log4j/kafka_log_maxbackupindex',20)
+-controller_log_maxfilesize = default('/configurations/kafka-log4j/controller_log_maxfilesize',256)
+-controller_log_maxbackupindex = default('/configurations/kafka-log4j/controller_log_maxbackupindex',20)
++# Kafka log4j
++kafka_log_maxfilesize = default('/configurations/kafka-log4j/kafka_log_maxfilesize', 256)
++kafka_log_maxbackupindex = default('/configurations/kafka-log4j/kafka_log_maxbackupindex', 20)
++controller_log_maxfilesize = default('/configurations/kafka-log4j/controller_log_maxfilesize', 256)
++controller_log_maxbackupindex = default('/configurations/kafka-log4j/controller_log_maxbackupindex', 20)
+ 
+ if (('kafka-log4j' in config['configurations']) and ('content' in config['configurations']['kafka-log4j'])):
+-    log4j_props = config['configurations']['kafka-log4j']['content']
++  log4j_props = config['configurations']['kafka-log4j']['content']
+ else:
+-    log4j_props = None
++  log4j_props = None
+ 
+ if 'ganglia_server_hosts' in config['clusterHostInfo'] and \
+-    len(config['clusterHostInfo']['ganglia_server_hosts'])>0:
++    len(config['clusterHostInfo']['ganglia_server_hosts']) > 0:
+   ganglia_installed = True
+   ganglia_server = config['clusterHostInfo']['ganglia_server_hosts'][0]
+   ganglia_report_interval = 60
+@@ -132,15 +141,15 @@
+ 
+ metric_collector_port = ""
+ metric_collector_protocol = ""
+-metric_truststore_path= default("/configurations/ams-ssl-client/ssl.client.truststore.location", "")
+-metric_truststore_type= default("/configurations/ams-ssl-client/ssl.client.truststore.type", "")
+-metric_truststore_password= default("/configurations/ams-ssl-client/ssl.client.truststore.password", "")
++metric_truststore_path = default("/configurations/ams-ssl-client/ssl.client.truststore.location", "")
++metric_truststore_type = default("/configurations/ams-ssl-client/ssl.client.truststore.type", "")
++metric_truststore_password = default("/configurations/ams-ssl-client/ssl.client.truststore.password", "")
+ 
+ set_instanceId = "false"
+ cluster_name = config["clusterName"]
+ 
+ if 'cluster-env' in config['configurations'] and \
+-        'metrics_collector_external_hosts' in config['configurations']['cluster-env']:
++    'metrics_collector_external_hosts' in config['configurations']['cluster-env']:
+   ams_collector_hosts = config['configurations']['cluster-env']['metrics_collector_external_hosts']
+   set_instanceId = "true"
+ else:
+@@ -153,7 +162,8 @@
+       'metrics_collector_external_port' in config['configurations']['cluster-env']:
+     metric_collector_port = config['configurations']['cluster-env']['metrics_collector_external_port']
+   else:
+-    metric_collector_web_address = default("/configurations/ams-site/timeline.metrics.service.webapp.address", "0.0.0.0:6188")
++    metric_collector_web_address = default("/configurations/ams-site/timeline.metrics.service.webapp.address",
++                                           "0.0.0.0:6188")
+     if metric_collector_web_address.find(':') != -1:
+       metric_collector_port = metric_collector_web_address.split(':')[1]
+     else:
+@@ -166,10 +176,13 @@
+   # If AMS is part of Services, use the KafkaTimelineMetricsReporter for metric reporting. Default is ''.
+   metrics_reporters = "org.apache.hadoop.metrics2.sink.kafka.KafkaTimelineMetricsReporter"
+ 
+-  host_in_memory_aggregation = str(default("/configurations/ams-site/timeline.metrics.host.inmemory.aggregation", True)).lower()
+-  host_in_memory_aggregation_port = default("/configurations/ams-site/timeline.metrics.host.inmemory.aggregation.port", 61888)
++  host_in_memory_aggregation = str(
++    default("/configurations/ams-site/timeline.metrics.host.inmemory.aggregation", True)).lower()
++  host_in_memory_aggregation_port = default("/configurations/ams-site/timeline.metrics.host.inmemory.aggregation.port",
++                                            61888)
+   is_aggregation_https_enabled = False
+-  if default("/configurations/ams-site/timeline.metrics.host.inmemory.aggregation.http.policy", "HTTP_ONLY") == "HTTPS_ONLY":
++  if default("/configurations/ams-site/timeline.metrics.host.inmemory.aggregation.http.policy",
++             "HTTP_ONLY") == "HTTPS_ONLY":
+     host_in_memory_aggregation_protocol = 'https'
+     is_aggregation_https_enabled = True
+   else:
+@@ -178,31 +191,37 @@
+ 
+ # Security-related params
+ kerberos_security_enabled = config['configurations']['cluster-env']['security_enabled']
+-kafka_kerberos_merge_advertised_listeners = default('/configurations/kafka-env/kerberos_merge_advertised_listeners', True)
++kafka_kerberos_merge_advertised_listeners = default('/configurations/kafka-env/kerberos_merge_advertised_listeners',
++                                                    True)
+ 
+ kafka_kerberos_enabled = (('security.inter.broker.protocol' in config['configurations']['kafka-broker']) and
+-                          (config['configurations']['kafka-broker']['security.inter.broker.protocol'] in ("PLAINTEXTSASL", "SASL_PLAINTEXT", "SASL_SSL")))
++                          (config['configurations']['kafka-broker']['security.inter.broker.protocol'] in (
++                            "PLAINTEXTSASL", "SASL_PLAINTEXT", "SASL_SSL")))
+ 
+-kafka_other_sasl_enabled = not kerberos_security_enabled and check_stack_feature(StackFeature.KAFKA_LISTENERS, stack_version_formatted) and \
+-                           check_stack_feature(StackFeature.KAFKA_EXTENDED_SASL_SUPPORT, format_stack_version(version_for_stack_feature_checks)) and \
++kafka_other_sasl_enabled = not kerberos_security_enabled and check_stack_feature(StackFeature.KAFKA_LISTENERS,
++                                                                                 stack_version_formatted) and \
++                           check_stack_feature(StackFeature.KAFKA_EXTENDED_SASL_SUPPORT,
++                                               format_stack_version(version_for_stack_feature_checks)) and \
+                            (("SASL_PLAINTEXT" in config['configurations']['kafka-broker']['listeners']) or
+-                            ("PLAINTEXTSASL" in config['configurations']['kafka-broker']['listeners']) or #to support backward compability (we'll replace this anyway before we write it to server.properties)
++                            ("PLAINTEXTSASL" in config['configurations']['kafka-broker'][
++                              'listeners']) or  # to support backward compability (we'll replace this anyway before we write it to server.properties)
+                             ("SASL_SSL" in config['configurations']['kafka-broker']['listeners']))
+ 
+-if kerberos_security_enabled and stack_version_formatted != "" and 'kafka_principal_name' in config['configurations']['kafka-env'] \
+-  and check_stack_feature(StackFeature.KAFKA_KERBEROS, stack_version_formatted):
+-    _hostname_lowercase = config['agentLevelParams']['hostname'].lower()
+-    _kafka_principal_name = config['configurations']['kafka-env']['kafka_principal_name']
+-    kafka_jaas_principal = _kafka_principal_name.replace('_HOST',_hostname_lowercase)
+-    kafka_keytab_path = config['configurations']['kafka-env']['kafka_keytab']
+-    kafka_bare_jaas_principal = get_bare_principal(_kafka_principal_name)
+-    kafka_kerberos_params = "-Djava.security.auth.login.config="+ conf_dir +"/kafka_jaas.conf"
++if kerberos_security_enabled and stack_version_formatted != "" and 'kafka_principal_name' in config['configurations'][
++  'kafka-env'] \
++    and check_stack_feature(StackFeature.KAFKA_KERBEROS, stack_version_formatted):
++  _hostname_lowercase = config['agentLevelParams']['hostname'].lower()
++  _kafka_principal_name = config['configurations']['kafka-env']['kafka_principal_name']
++  kafka_jaas_principal = _kafka_principal_name.replace('_HOST', _hostname_lowercase)
++  kafka_keytab_path = config['configurations']['kafka-env']['kafka_keytab']
++  kafka_bare_jaas_principal = get_bare_principal(_kafka_principal_name)
++  kafka_kerberos_params = "-Djava.security.auth.login.config=" + conf_dir + "/kafka_jaas.conf"
+ elif kafka_other_sasl_enabled:
+-  kafka_kerberos_params = "-Djava.security.auth.login.config="+ conf_dir +"/kafka_jaas.conf"
++  kafka_kerberos_params = "-Djava.security.auth.login.config=" + conf_dir + "/kafka_jaas.conf"
+ else:
+-    kafka_kerberos_params = ''
+-    kafka_jaas_principal = None
+-    kafka_keytab_path = None
++  kafka_kerberos_params = ''
++  kafka_jaas_principal = None
++  kafka_keytab_path = None
+ 
+ # for curl command in ranger plugin to get db connector
+ jdk_location = config['ambariLevelParams']['jdk_location']
+@@ -214,14 +233,16 @@
+ has_ranger_admin = not len(ranger_admin_hosts) == 0
+ 
+ # ranger support xml_configuration flag, instead of depending on ranger xml_configurations_supported/ranger-env, using stack feature
+-xml_configurations_supported = check_stack_feature(StackFeature.RANGER_XML_CONFIGURATION, version_for_stack_feature_checks)
++xml_configurations_supported = check_stack_feature(StackFeature.RANGER_XML_CONFIGURATION,
++                                                   version_for_stack_feature_checks)
+ 
+ # ranger kafka plugin enabled property
+ enable_ranger_kafka = default("configurations/ranger-kafka-plugin-properties/ranger-kafka-plugin-enabled", "No")
+ enable_ranger_kafka = True if enable_ranger_kafka.lower() == 'yes' else False
+ 
+ # ranger kafka-plugin supported flag, instead of dependending on is_supported_kafka_ranger/kafka-env.xml, using stack feature
+-is_supported_kafka_ranger = check_stack_feature(StackFeature.KAFKA_RANGER_PLUGIN_SUPPORT, version_for_stack_feature_checks)
++is_supported_kafka_ranger = check_stack_feature(StackFeature.KAFKA_RANGER_PLUGIN_SUPPORT,
++                                                version_for_stack_feature_checks)
+ 
+ # ranger kafka properties
+ if enable_ranger_kafka and is_supported_kafka_ranger:
+@@ -235,7 +256,8 @@
+   xa_audit_db_user = default('/configurations/admin-properties/audit_db_user', 'rangerlogger')
+ 
+   xa_audit_db_password = ''
+-  if not is_empty(config['configurations']['admin-properties']['audit_db_password']) and stack_supports_ranger_audit_db and has_ranger_admin:
++  if not is_empty(config['configurations']['admin-properties'][
++                    'audit_db_password']) and stack_supports_ranger_audit_db and has_ranger_admin:
+     xa_audit_db_password = config['configurations']['admin-properties']['audit_db_password']
+ 
+   # ranger kafka service/repository name
+@@ -250,8 +272,10 @@
+   if not has_ranger_admin and enable_ranger_kafka:
+     external_admin_username = default('/configurations/ranger-kafka-plugin-properties/external_admin_username', 'admin')
+     external_admin_password = default('/configurations/ranger-kafka-plugin-properties/external_admin_password', 'admin')
+-    external_ranger_admin_username = default('/configurations/ranger-kafka-plugin-properties/external_ranger_admin_username', 'amb_ranger_admin')
+-    external_ranger_admin_password = default('/configurations/ranger-kafka-plugin-properties/external_ranger_admin_password', 'amb_ranger_admin')
++    external_ranger_admin_username = default(
++      '/configurations/ranger-kafka-plugin-properties/external_ranger_admin_username', 'amb_ranger_admin')
++    external_ranger_admin_password = default(
++      '/configurations/ranger-kafka-plugin-properties/external_ranger_admin_password', 'amb_ranger_admin')
+     ranger_env = {}
+     ranger_env['admin_username'] = external_admin_username
+     ranger_env['admin_password'] = external_admin_password
+@@ -269,10 +293,11 @@
+   policy_user = config['configurations']['ranger-kafka-plugin-properties']['policy_user']
+ 
+   ranger_plugin_config = {
+-    'username' : config['configurations']['ranger-kafka-plugin-properties']['REPOSITORY_CONFIG_USERNAME'],
+-    'password' : config['configurations']['ranger-kafka-plugin-properties']['REPOSITORY_CONFIG_PASSWORD'],
+-    'zookeeper.connect' : config['configurations']['ranger-kafka-plugin-properties']['zookeeper.connect'],
+-    'commonNameForCertificate' : config['configurations']['ranger-kafka-plugin-properties']['common.name.for.certificate']
++    'username': config['configurations']['ranger-kafka-plugin-properties']['REPOSITORY_CONFIG_USERNAME'],
++    'password': config['configurations']['ranger-kafka-plugin-properties']['REPOSITORY_CONFIG_PASSWORD'],
++    'zookeeper.connect': config['configurations']['ranger-kafka-plugin-properties']['zookeeper.connect'],
++    'commonNameForCertificate': config['configurations']['ranger-kafka-plugin-properties'][
++      'common.name.for.certificate']
+   }
+ 
+   atlas_server_hosts = default('/clusterHostInfo/atlas_server_hosts', [])
+@@ -289,12 +314,14 @@
+   has_jobhistoryserver = not len(spark_jobhistoryserver_hosts) == 0
+ 
+   if has_atlas_server:
+-    atlas_notification_topics = default('/configurations/application-properties/atlas.notification.topics', 'ATLAS_HOOK,ATLAS_ENTITIES')
++    atlas_notification_topics = default('/configurations/application-properties/atlas.notification.topics',
++                                        'ATLAS_HOOK,ATLAS_ENTITIES')
+     atlas_notification_topics_list = atlas_notification_topics.split(',')
+     hive_user = default('/configurations/hive-env/hive_user', 'hive')
+     hbase_user = default('/configurations/hbase-env/hbase_user', 'hbase')
+     atlas_user = default('/configurations/atlas-env/metadata_user', 'atlas')
+-    rangertagsync_user = default('/configurations/ranger-tagsync-site/ranger.tagsync.dest.ranger.username', 'rangertagsync')
++    rangertagsync_user = default('/configurations/ranger-tagsync-site/ranger.tagsync.dest.ranger.username',
++                                 'rangertagsync')
+     spark_user = 'spark_atlas'
+     if len(atlas_notification_topics_list) == 2:
+       atlas_hook = atlas_notification_topics_list[0]
+@@ -334,6 +361,23 @@
+   if len(custom_ranger_service_config) > 0:
+     ranger_plugin_config.update(custom_ranger_service_config)
+ 
++  protocol = default('/configurations/kafka-broker/security.inter.broker.protocol', 'SASL_PLAINTEXT')
++  sasl_mechanism = default('/configurations/kafka-broker/sasl.mechanism.inter.broker.protocol', 'GSSAPI')
++  listeners = default('/configurations/kafka-broker/listeners', 'PLAINTEXT://localhost:9092')
++  port = re.search(r':(\d+)\s*$', listeners.split(',')[0]).group(1)
++  bootstrap_servers = ",".join(f"{h}:{port}" for h in kafka_hosts)
++  ranger_kafka_keytab = default('/configurations/ranger-admin-site/ranger.lookup.headless.kerberos.keytab',
++                                '/etc/security/keytabs/rangerlookup.headless.keytab')
++  ranger_kafka_principal = default('/configurations/ranger-admin-site/ranger.lookup.headless.kerberos.principal', '')
++
++  ranger_plugin_config['bootstrap.servers'] = bootstrap_servers
++  ranger_plugin_config['security.protocol'] = protocol
++  ranger_plugin_config['sasl.mechanism'] = sasl_mechanism
++  ranger_plugin_config['kafka.keytab'] = ranger_kafka_keytab
++  ranger_plugin_config['kafka.principal'] = ranger_kafka_principal
++
++  Logger.info('=================== ranger_plugin_config is : {0}'.format(ranger_plugin_config))
++
+   kafka_ranger_plugin_repo = {
+     'isEnabled': 'true',
+     'configs': ranger_plugin_config,
+@@ -343,6 +387,8 @@
+     'type': 'kafka',
+     'assetType': '1'
+   }
++  Logger.info('=================== kafka_ranger_plugin_repo is : {0}'.format(kafka_ranger_plugin_repo))
++
+ 
+   downloaded_custom_connector = None
+   previous_jdbc_jar_name = None
+@@ -364,12 +410,15 @@
+     xa_audit_db_is_enabled = config['configurations']['ranger-kafka-audit']['xasecure.audit.destination.db']
+ 
+   xa_audit_hdfs_is_enabled = default('/configurations/ranger-kafka-audit/xasecure.audit.destination.hdfs', False)
+-  ssl_keystore_password = config['configurations']['ranger-kafka-policymgr-ssl']['xasecure.policymgr.clientssl.keystore.password'] if xml_configurations_supported else None
+-  ssl_truststore_password = config['configurations']['ranger-kafka-policymgr-ssl']['xasecure.policymgr.clientssl.truststore.password'] if xml_configurations_supported else None
++  ssl_keystore_password = config['configurations']['ranger-kafka-policymgr-ssl'][
++    'xasecure.policymgr.clientssl.keystore.password'] if xml_configurations_supported else None
++  ssl_truststore_password = config['configurations']['ranger-kafka-policymgr-ssl'][
++    'xasecure.policymgr.clientssl.truststore.password'] if xml_configurations_supported else None
+   credential_file = format('/etc/ranger/{repo_name}/cred.jceks')
+ 
+   stack_version = get_stack_version('kafka-broker')
+-  setup_ranger_env_sh_source = format('{stack_root}/{stack_version}/ranger-kafka-plugin/install/conf.templates/enable/kafka-ranger-env.sh')
++  setup_ranger_env_sh_source = format(
++    '{stack_root}/{stack_version}/ranger-kafka-plugin/install/conf.templates/enable/kafka-ranger-env.sh')
+   setup_ranger_env_sh_target = format("{conf_dir}/kafka-ranger-env.sh")
+ 
+   # for SQLA explicitly disable audit to DB for Ranger
+@@ -380,9 +429,9 @@
+ cluster_name = config['clusterName']
+ 
+ # required when Ranger-KMS is SSL enabled
+-ranger_kms_hosts = default('/clusterHostInfo/ranger_kms_server_hosts',[])
++ranger_kms_hosts = default('/clusterHostInfo/ranger_kms_server_hosts', [])
+ has_ranger_kms = len(ranger_kms_hosts) > 0
+-is_ranger_kms_ssl_enabled = default('configurations/ranger-kms-site/ranger.service.https.attrib.ssl.enabled',False)
++is_ranger_kms_ssl_enabled = default('configurations/ranger-kms-site/ranger.service.https.attrib.ssl.enabled', False)
+ 
+ # ranger kafka plugin section end
+ 
+@@ -412,20 +461,21 @@
+     mount_table_content = mount_table['content']
+ 
+ import functools
+-#create partial functions with common arguments for every HdfsResource call
+-#to create/delete hdfs directory/file/copyfromlocal we need to call params.HdfsResource in code
++
++# create partial functions with common arguments for every HdfsResource call
++# to create/delete hdfs directory/file/copyfromlocal we need to call params.HdfsResource in code
+ HdfsResource = functools.partial(
+   HdfsResource,
+   user=hdfs_user,
+-  hdfs_resource_ignore_file = "/var/lib/ambari-agent/data/.hdfs_resource_ignore",
+-  security_enabled = kerberos_security_enabled,
+-  keytab = hdfs_user_keytab,
+-  kinit_path_local = kinit_path_local,
+-  hadoop_bin_dir = hadoop_bin_dir,
+-  hadoop_conf_dir = hadoop_conf_dir,
+-  principal_name = hdfs_principal_name,
+-  hdfs_site = hdfs_site,
+-  default_fs = default_fs,
+-  immutable_paths = get_not_managed_resources(),
+-  dfs_type = dfs_type,
++  hdfs_resource_ignore_file="/var/lib/ambari-agent/data/.hdfs_resource_ignore",
++  security_enabled=kerberos_security_enabled,
++  keytab=hdfs_user_keytab,
++  kinit_path_local=kinit_path_local,
++  hadoop_bin_dir=hadoop_bin_dir,
++  hadoop_conf_dir=hadoop_conf_dir,
++  principal_name=hdfs_principal_name,
++  hdfs_site=hdfs_site,
++  default_fs=default_fs,
++  immutable_paths=get_not_managed_resources(),
++  dfs_type=dfs_type,
+ )
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/properties/admin-logback.xml.j2
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/properties/admin-logback.xml.j2 b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/properties/admin-logback.xml.j2
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/properties/admin-logback.xml.j2	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/properties/admin-logback.xml.j2	(date 1770859073264)
+@@ -113,4 +113,22 @@
+   <root level="warn">
+     <appender-ref ref="xa_log_appender"/>
+   </root>
++  {% if is_security_logger_debug_mode  %}
++  <!-- 【TTBigdata 定制@since 2.2.3】【安全认证与 Kerberos 调试日志】Hadoop RPC/Auth 与 Ranger Security 相关 DEBUG 日志开关 -->
++  <!-- Hadoop security / RPC / auth -->
++  <logger name="org.apache.hadoop.security" level="debug" additivity="false">
++    <appender-ref ref="xa_log_appender"/>
++  </logger>
++  <logger name="org.apache.hadoop.ipc" level="debug" additivity="false">
++    <appender-ref ref="xa_log_appender"/>
++  </logger>
++  <logger name="org.apache.hadoop.security.authentication" level="debug" additivity="false">
++    <appender-ref ref="xa_log_appender"/>
++  </logger>
++
++  <!-- Ranger plugins / kerberos-related flows sometimes show up here -->
++  <logger name="org.apache.ranger.security" level="debug" additivity="false">
++    <appender-ref ref="xa_log_appender"/>
++  </logger>
++  {% endif %}
+ </configuration>
+Index: ambari-web/app/data/configs/services/ranger_properties.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-web/app/data/configs/services/ranger_properties.js b/ambari-web/app/data/configs/services/ranger_properties.js
+--- a/ambari-web/app/data/configs/services/ranger_properties.js	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-web/app/data/configs/services/ranger_properties.js	(date 1770701498026)
+@@ -92,6 +92,7 @@
+           "ranger.ldap.bind.dn",
+           "ranger.ldap.bind.password",
+           "ranger.ldap.referral",
++          "ranger.ldap.user.searchbase",
+           "ranger.ldap.user.searchfilter",
+           "ranger.ldap.group.searchbase",
+           "ranger.ldap.group.searchfilter"
+@@ -197,25 +198,32 @@
+     "serviceName": "RANGER"
+   },
+   {
++    "category": "LDAPSettings",
++    "filename": "ranger-admin-site.xml",
++    "name": "ranger.ldap.user.searchbase",
++    "serviceName": "RANGER",
++    "index": 4
++  },
++  {
+     "category": "LDAPSettings",
+     "filename": "ranger-admin-site.xml",
+     "name": "ranger.ldap.user.searchfilter",
+     "serviceName": "RANGER",
+-    "index": 4
++    "index": 5
+   },
+   {
+     "category": "LDAPSettings",
+     "filename": "ranger-admin-site.xml",
+     "name": "ranger.ldap.group.searchbase",
+     "serviceName": "RANGER",
+-    "index": 5
++    "index": 6
+   },
+   {
+     "category": "LDAPSettings",
+     "filename": "ranger-admin-site.xml",
+     "name": "ranger.ldap.group.searchfilter",
+     "serviceName": "RANGER",
+-    "index": 6
++    "index": 7
+   },
+   {
+     "category": "KnoxSSOSettings",
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-admin-site.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-admin-site.xml b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-admin-site.xml
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-admin-site.xml	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-admin-site.xml	(date 1770859321927)
+@@ -221,16 +221,6 @@
+         <on-ambari-upgrade add="false"/>
+     </property>
+     <property>
+-        <name>ranger.ldap.user.dnpattern</name>
+-        <display-name>Ldap User DN Pattern</display-name>
+-        <value>uid={0},ou=users,dc=xasecure,dc=net</value>
+-        <description>LDAP user DN, only used if Authentication method is LDAP</description>
+-        <value-attributes>
+-            <overridable>false</overridable>
+-        </value-attributes>
+-        <on-ambari-upgrade add="false"/>
+-    </property>
+-    <property>
+         <name>ranger.ldap.group.searchbase</name>
+         <display-name>Group Search Base</display-name>
+         <value>{{ranger_ug_ldap_group_searchbase}}</value>
+@@ -516,7 +506,7 @@
+     </property>
+     <property>
+         <name>ranger.spnego.kerberos.principal</name>
+-        <value>*</value>
++        <value>{{ranger_spnego_kerberos_principal}}</value>
+         <description/>
+         <property-type>KERBEROS_PRINCIPAL</property-type>
+         <value-attributes>
+@@ -683,16 +673,6 @@
+         <on-ambari-upgrade add="true"/>
+     </property>
+     <property>
+-        <name>ranger.ldap.user.searchfilter</name>
+-        <display-name>User Search Filter</display-name>
+-        <value>(uid={0})</value>
+-        <description>Search filter used for Bind Authentication</description>
+-        <value-attributes>
+-            <overridable>false</overridable>
+-        </value-attributes>
+-        <on-ambari-upgrade add="true"/>
+-    </property>
+-    <property>
+         <name>ranger.kms.service.user.hdfs</name>
+         <value/>
+         <description/>
+@@ -1033,6 +1013,126 @@
+         </value-attributes>
+         <on-ambari-upgrade add="true"/>
+     </property>
++
++
++    <property>
++        <name>ranger.lookup.headless.kerberos.principal</name>
++        <value/>
++        <description>
++            【TTBigdata 定制@since 2.2.3】
++            Ranger Admin 在访问外部组件（如 Kafka）进行 lookup / 校验时使用的
++            Headless Kerberos Principal。
++
++            该 Principal 不绑定具体主机名，通常用于 Ranger Admin 高可用（HA）部署场景，
++            以避免因主备切换导致的 Kerberos Principal 不匹配问题。
++
++            使用建议：
++            - HA 场景推荐配置为不带 _HOST 的固定 Principal，
++            例如：rangerlookup@EXAMPLE.COM；
++            - 对应 keytab 需在所有 Ranger Admin 节点上保持一致；
++            - 该 Principal 主要用于 Ranger → 外部服务（Client）访问，
++            不影响 Ranger Admin 自身的 Kerberos 认证配置。
++        </description>
++        <property-type>KERBEROS_PRINCIPAL</property-type>
++        <value-attributes>
++            <empty-value-valid>true</empty-value-valid>
++        </value-attributes>
++        <on-ambari-upgrade add="true"/>
++    </property>
++    <property>
++        <name>ranger.lookup.headless.kerberos.keytab</name>
++        <value/>
++        <description>
++            【TTBigdata 定制@since 2.2.3】
++            与 ranger.lookup.headless.kerberos.principal 对应的 Keytab 文件路径。
++
++            该 Keytab 用于 Ranger Admin 在高可用（HA）场景下，
++            以 Headless Principal 身份访问外部服务（如 Kafka）进行 lookup 与校验操作。
++
++            配置要求：
++            - Keytab 文件必须在所有 Ranger Admin 节点上存在，且路径一致；
++            - 文件权限建议为只读（0400 / 0440），所有者为 ranger 运行用户；
++            - Keytab 中需包含与 Headless Principal 完全匹配的 Kerberos 条目。
++
++            说明：
++            该配置仅影响 Ranger Admin 作为客户端访问外部系统的行为，
++            不会影响 Ranger 服务本身或 Web UI 的 Kerberos 认证。
++        </description>
++        <value-attributes>
++            <empty-value-valid>true</empty-value-valid>
++        </value-attributes>
++        <on-ambari-upgrade add="true"/>
++    </property>
++    <!-- 【TTBigdata 定制@since 2.2.3】
++     说明：以下为 Ranger Admin 使用 LDAP/FreeIPA 做登录认证时的用户定位参数。
++     建议：优先使用 searchbase + searchfilter 做“搜索定位用户”，避免 dnpattern 造成 DN 写死或多入口(compat/accounts)重复命中。
++    -->
++    <property>
++        <name>ranger.ldap.user.dnpattern</name>
++        <display-name>Ldap User DN Pattern</display-name>
++        <value>uid={0},cn=users,cn=accounts,dc=test,dc=com</value>
++        <description>
++            【TTBigdata 定制@since 2.2.3】
++            LDAP 用户 DN 拼接模板（仅在 LDAP 认证且采用“DN 模式绑定”时使用）。
++            当该项存在时，Ranger 会直接按模板拼出用户 DN（例如 admin -> uid=admin,cn=users,cn=accounts,dc=test,dc=com）去
++            Bind 验证；
++            如果你希望强制走“搜索模式”（searchbase/searchfilter），建议移除此项。
++        </description>
++        <value-attributes>
++            <overridable>false</overridable>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++
++    <property>
++        <name>ranger.ldap.user.searchfilter</name>
++        <display-name>User Search Filter</display-name>
++        <value>(uid={0})</value>
++        <description>
++            【TTBigdata 定制@since 2.2.3】
++            用户搜索过滤条件（用于 Bind Authentication 的“搜索定位用户”阶段）。
++            {0} 会被替换为登录用户名，例如 admin -> (uid=admin)。
++            若目录是 AD 才常见 (sAMAccountName={0})，FreeIPA/LDAP 通常用 (uid={0})。
++        </description>
++        <value-attributes>
++            <overridable>false</overridable>
++        </value-attributes>
++        <on-ambari-upgrade add="true"/>
++    </property>
++
++    <property>
++        <name>ranger.ldap.user.searchbase</name>
++        <display-name>User Search Base DN</display-name>
++        <value>cn=users,cn=accounts,dc=test,dc=com</value>
++        <description>
++            【TTBigdata 定制@since 2.2.3】
++            用户搜索的起始 DN（Base DN）。
++            Ranger 会在该 DN 下面按 searchfilter 进行搜索定位用户 DN，然后再进行 Bind 验证。
++            FreeIPA 推荐使用 cn=users,cn=accounts,dc=test,dc=com，避免搜索范围过大或命中 compat 产生重复结果。
++        </description>
++        <value-attributes>
++            <overridable>false</overridable>
++        </value-attributes>
++        <on-ambari-upgrade add="true"/>
++    </property>
++
++    <property>
++        <name>ranger.admin.mode.security.debug</name>
++        <display-name>Ranger Admin Security Logger Debug Mode</display-name>
++        <value>false</value>
++        <description>
++            【TTBigdata 定制@since 2.2.3】
++            【安全认证与 Kerberos 调试日志开关】控制 Ranger Admin 相关的 Hadoop Security / IPC / Auth 以及 Ranger Security
++            包的日志级别是否提升为 DEBUG。
++            - true：开启 DEBUG（排查 Kerberos、SPNEGO、RPC/Auth、Ranger 插件鉴权链路时使用）
++            - false：默认关闭（生产建议保持关闭，避免日志量暴涨与性能影响）
++        </description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>boolean</type>
++        </value-attributes>
++        <on-ambari-upgrade add="true"/>
++    </property>
+ 
+ 
+ </configuration>
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KERBEROS/properties/krb5_conf.j2
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KERBEROS/properties/krb5_conf.j2 b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KERBEROS/properties/krb5_conf.j2
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KERBEROS/properties/krb5_conf.j2	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/KERBEROS/properties/krb5_conf.j2	(date 1769915477058)
+@@ -22,6 +22,8 @@
+   ticket_lifetime = 24h
+   dns_lookup_realm = false
+   dns_lookup_kdc = false
++  rdns = false
++  dns_canonicalize_hostname = false
+   default_ccache_name = /tmp/krb5cc_%{uid}
+   #default_tgs_enctypes = {{ encryption_types }}
+   #default_tkt_enctypes = {{ encryption_types }}
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/params.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/params.py b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/params.py
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/params.py	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/package/scripts/params.py	(date 1770859242252)
+@@ -687,4 +687,17 @@
+ 
+ knox_gateway_port = default('/configurations/gateway-site/gateway.port', '6543')
+ knox_gateway_hosts = default('/clusterHostInfo/knox_gateway_hosts', [])
+-knox_gateway_host = knox_gateway_hosts[0] if len(knox_gateway_hosts) > 0 else None
+\ No newline at end of file
++knox_gateway_host = knox_gateway_hosts[0] if len(knox_gateway_hosts) > 0 else None
++
++
++
++ranger_spnego_kerberos_domain = default('/configurations/ranger-env/ranger_spnego_ha_domain','ranger-ha.hadoop.com')
++realm_name = default('/configurations/kerberos-env/realm','')
++if is_ranger_ha_enabled:
++    ranger_spnego_kerberos_principal = 'HTTP/'+ ranger_spnego_kerberos_domain + '@'+ realm_name
++else:
++    ranger_spnego_kerberos_principal = 'HTTP/'+  ranger_host.lower() +'@'+ realm_name
++
++
++
++is_security_logger_debug_mode = default('/configurations/ranger-admin-site/ranger.admin.mode.security.debug', False)
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/kerberos.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/kerberos.json b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/kerberos.json
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/kerberos.json	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/kerberos.json	(date 1770175841796)
+@@ -31,9 +31,9 @@
+               "name": "rangeradmin",
+               "principal": {
+                 "value": "rangeradmin/_HOST@${realm}",
+-                "type" : "service",
++                "type": "service",
+                 "configuration": "ranger-admin-site/ranger.admin.kerberos.principal",
+-                "local_username" : "${ranger-env/ranger_user}"
++                "local_username": "${ranger-env/ranger_user}"
+               },
+               "keytab": {
+                 "file": "${keytab_dir}/rangeradmin.service.keytab",
+@@ -49,7 +49,7 @@
+               "principal": {
+                 "value": "rangerlookup/_HOST@${realm}",
+                 "configuration": "ranger-admin-site/ranger.lookup.kerberos.principal",
+-                "type" : "service"
++                "type": "service"
+               },
+               "keytab": {
+                 "file": "${keytab_dir}/rangerlookup.service.keytab",
+@@ -61,6 +61,39 @@
+               }
+             },
+             {
++              "name": "rangerlookup_headless",
++              "principal": {
++                "value": "rangerlookup${principal_suffix}@${realm}",
++                "configuration": "ranger-admin-site/ranger.lookup.headless.kerberos.principal",
++                "type": "user",
++                "local_username": "${ranger-env/ranger_user}"
++              },
++              "keytab": {
++                "file": "${keytab_dir}/rangerlookup.headless.keytab",
++                "owner": {
++                  "name": "${ranger-env/ranger_user}",
++                  "access": "r"
++                },
++                "configuration": "ranger-admin-site/ranger.lookup.headless.kerberos.keytab"
++              }
++            },
++            {
++              "name": "ranger_spnego_ha",
++              "principal": {
++                "value": "HTTP/${ranger-env/ranger_spnego_ha_domain}@${realm}",
++                "type": "service",
++                "configuration": "ranger-admin-site/ranger.ha.spnego.kerberos.principal"
++              },
++              "keytab": {
++                "file": "${keytab_dir}/rangerhttpha.service.keytab",
++                "owner": {
++                  "name": "${ranger-env/ranger_user}",
++                  "access": "r"
++                },
++                "configuration": "ranger-admin-site/ranger.ha.spnego.kerberos.keytab"
++              }
++            },
++            {
+               "name": "ranger_ranger_admin_spnego",
+               "reference": "/spnego",
+               "keytab": {
+@@ -80,8 +113,11 @@
+             {
+               "name": "ranger_ranger_admin_infra-solr",
+               "reference": "/AMBARI_INFRA_SOLR/INFRA_SOLR/infra-solr",
+-              "when" : {
+-                "contains" : ["services", "AMBARI_INFRA_SOLR"]
++              "when": {
++                "contains": [
++                  "services",
++                  "AMBARI_INFRA_SOLR"
++                ]
+               }
+             }
+           ]
+@@ -93,9 +129,9 @@
+               "name": "rangerusersync",
+               "principal": {
+                 "value": "rangerusersync/_HOST@${realm}",
+-                "type" : "service",
+-                "configuration" : "ranger-ugsync-site/ranger.usersync.kerberos.principal",
+-                "local_username" : "rangerusersync"
++                "type": "service",
++                "configuration": "ranger-ugsync-site/ranger.usersync.kerberos.principal",
++                "local_username": "rangerusersync"
+               },
+               "keytab": {
+                 "file": "${keytab_dir}/rangerusersync.service.keytab",
+@@ -115,9 +151,9 @@
+               "name": "rangertagsync",
+               "principal": {
+                 "value": "rangertagsync/_HOST@${realm}",
+-                "type" : "service",
++                "type": "service",
+                 "configuration": "ranger-tagsync-site/ranger.tagsync.kerberos.principal",
+-                "local_username" : "rangertagsync"
++                "local_username": "rangertagsync"
+               },
+               "keytab": {
+                 "file": "${keytab_dir}/rangertagsync.service.keytab",
+Index: ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-env.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-env.xml b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-env.xml
+--- a/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-env.xml	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/resources/stacks/BIGTOP/3.2.0/services/RANGER/configuration/ranger-env.xml	(date 1770175841791)
+@@ -19,685 +19,734 @@
+  */
+ -->
+ <configuration supports_final="true" supports_adding_forbidden="true">
+-  <property>
+-    <name>ranger_user</name>
+-    <value>ranger</value>
+-    <property-type>USER</property-type>
+-    <display-name>Ranger User</display-name>
+-    <description>Ranger username</description>
+-    <value-attributes>
+-      <type>user</type>
+-      <overridable>false</overridable>
+-      <user-groups>
+-        <property>
+-          <type>ranger-env</type>
+-          <name>ranger_group</name>
+-        </property>
+-        <property>
+-          <type>cluster-env</type>
+-          <name>user_group</name>
+-        </property>
+-      </user-groups>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_group</name>
+-    <value>ranger</value>
+-    <property-type>GROUP</property-type>
+-    <display-name>Ranger Group</display-name>
+-    <description>Ranger group</description>
+-    <value-attributes>
+-      <type>user</type>
+-      <overridable>false</overridable>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_admin_username</name>
+-    <value>amb_ranger_admin</value>
+-    <property-type>TEXT</property-type>
+-    <display-name>Ranger Admin username for Ambari</display-name>
+-    <description>This is the ambari user created for creating repositories and policies in Ranger Admin for each plugin</description>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property require-input="true">
+-    <name>ranger_admin_password</name>
+-    <value/>
+-    <property-type>PASSWORD</property-type>
+-    <display-name>Ranger Admin user's password for Ambari</display-name>
+-    <description>This is the ambari user password created for creating repositories and policies in Ranger Admin for each plugin. Password should be minimum 10 characters with minimum one alphabet and one numeric. Unsupported special characters are &quot; &apos; &#92; &#96; &#180;.</description>
+-    <value-attributes>
+-      <type>password</type>
+-      <overridable>false</overridable>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>admin_username</name>
+-    <value>admin</value>
+-    <display-name>Ranger Admin username</display-name>
+-    <description>This is the username for default admin user that is used for creating ambari user in Ranger Admin</description>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property require-input="true">
+-    <name>admin_password</name>
+-    <value></value>
+-    <property-type>PASSWORD</property-type>
+-    <display-name>Ranger Admin user's password</display-name>
+-    <description>This is the password for default admin user that is used for creating ambari user in Ranger Admin. Password should be minimum 10 characters with minimum one alphabet and one numeric. Unsupported special characters are &quot; &apos; &#92; &#96; &#180;.</description>
+-    <value-attributes>
+-      <type>password</type>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_pid_dir</name>
+-    <display-name>Ranger PID Dir</display-name>
+-    <value>/var/run/ranger</value>
+-    <description/>
+-    <value-attributes>
+-      <type>directory</type>
+-      <overridable>false</overridable>
+-      <editable-only-at-install>true</editable-only-at-install>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-hdfs-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>HDFS Ranger Plugin</display-name>
+-    <description>Enable HDFS Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-hive-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>Hive Ranger Plugin</display-name>
+-    <description>Enable Hive Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-hbase-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>Hbase Ranger Plugin</display-name>
+-    <description>Enable HBase Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-storm-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>Storm Ranger Plugin</display-name>
+-    <description>Enable Storm Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-knox-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>Knox Ranger Plugin</display-name>
+-    <description>Enable Knox Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>xml_configurations_supported</name>
+-    <value>true</value>
+-    <description/>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>create_db_dbuser</name>
+-    <value>true</value>
+-    <display-name>Setup Database and Database User</display-name>
+-    <description>If set to Yes, Ambari will create and setup Ranger Database and Database User. This will require to specify Database Admin user and password</description>
+-    <value-attributes>
+-      <type>value-list</type>
+-      <overridable>false</overridable>
+-      <entries>
+-        <entry>
+-          <value>true</value>
+-          <label>Yes</label>
+-        </entry>
+-        <entry>
+-          <value>false</value>
+-          <label>No</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_privelege_user_jdbc_url</name>
+-    <display-name>JDBC connect string for root user</display-name>
+-    <description>JDBC connect string - auto populated based on other values. This is to be used by root user</description>
+-    <value>jdbc:mysql://localhost</value>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-    </value-attributes>
+-    <depends-on>
+-      <property>
+-        <type>admin-properties</type>
+-        <name>DB_FLAVOR</name>
+-      </property>
+-      <property>
+-        <type>admin-properties</type>
+-        <name>db_host</name>
+-      </property>
+-    </depends-on>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-yarn-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>YARN Ranger Plugin</display-name>
+-    <description>Enable YARN Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-kafka-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>Kafka Ranger Plugin</display-name>
+-    <description>Enable Kafka Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>xasecure.audit.destination.solr</name>
+-    <value>true</value>
+-    <display-name>Audit to Solr</display-name>
+-    <description>Enable Audit to Solr for all ranger supported services. This property is overridable at service level</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>true</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>false</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>is_solrCloud_enabled</name>
+-    <display-name>SolrCloud</display-name>
+-    <description>SolrCloud uses zookeeper for distributed search and indexing</description>
+-    <value>true</value>
+-    <value-attributes>
+-      <type>value-list</type>
+-      <overridable>false</overridable>
+-      <entries>
+-        <entry>
+-          <value>true</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>false</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-      <empty-value-valid>true</empty-value-valid>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>xasecure.audit.destination.hdfs</name>
+-    <value>true</value>
+-    <display-name>Audit to HDFS</display-name>
+-    <description>Enable Audit to HDFS for all ranger supported services. This property is overridable at service level</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>true</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>false</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>xasecure.audit.destination.hdfs.dir</name>
+-    <value>hdfs://localhost:8020</value>
+-    <display-name>Destination HDFS Directory</display-name>
+-    <description>HDFS folder to write audit to, make sure all service user has required permissions. This property is overridable at service level</description>
+-    <depends-on>
+-      <property>
+-        <type>core-site</type>
+-        <name>fs.defaultFS</name>
+-      </property>
+-    </depends-on>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_solr_config_set</name>
+-    <value>ranger_audits</value>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_solr_collection_name</name>
+-    <value>ranger_audits</value>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_solr_shards</name>
+-    <value>1</value>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_solr_replication_factor</name>
+-    <value>1</value>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-atlas-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>Atlas Ranger Plugin</display-name>
+-    <description>Enable Atlas Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>is_external_solrCloud_enabled</name>
+-    <display-name>External SolrCloud</display-name>
+-    <value>false</value>
+-    <description>Using Externally managed solr cloud ?</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>true</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>false</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>is_external_solrCloud_kerberos</name>
+-    <display-name>External SolrCloud kerberos</display-name>
+-    <value>false</value>
+-    <description>Is Externally managed solr cloud kerberos ?</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>true</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>false</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger-nifi-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>NIFI Ranger Plugin</display-name>
+-    <description>Enable NIFI Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>is_nested_groupsync_enabled</name>
+-    <display-name>Sync Nested Groups</display-name>
+-    <description/>
+-    <value>false</value>
+-    <value-attributes>
+-      <type>value-list</type>
+-      <overridable>false</overridable>
+-      <entries>
+-        <entry>
+-          <value>true</value>
+-          <label>Yes</label>
+-        </entry>
+-        <entry>
+-          <value>false</value>
+-          <label>No</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-      <empty-value-valid>true</empty-value-valid>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>content</name>
+-    <display-name>ranger-env template</display-name>
+-    <description>This is the jinja template for Ranger env</description>
+-    <value/>
+-    <property-type>VALUE_FROM_PROPERTY_FILE</property-type>
+-    <value-attributes>
+-      <property-file-name>ranger-env.sh.j2</property-file-name>
+-      <property-file-type>text</property-file-type>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property require-input="true">
+-    <name>rangerusersync_user_password</name>
+-    <value></value>
+-    <property-type>PASSWORD</property-type>
+-    <display-name>Ranger Usersync user's password</display-name>
+-    <description>This is the rangerusersync user password. Password should be minimum 10 characters with minimum one alphabet and one numeric. Unsupported special characters are &quot; &apos; &#92; &#96; &#180;.</description>
+-    <value-attributes>
+-      <type>password</type>
+-      <overridable>false</overridable>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property require-input="true">
+-    <name>rangertagsync_user_password</name>
+-    <value></value>
+-    <property-type>PASSWORD</property-type>
+-    <display-name>Ranger Tagsync user's password</display-name>
+-    <description>This is the rangertagsync user password. Password should be minimum 10 characters with minimum one alphabet and one numeric. Unsupported special characters are &quot; &apos; &#92; &#96; &#180;.</description>
+-    <value-attributes>
+-      <type>password</type>
+-      <overridable>false</overridable>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property require-input="true">
+-    <name>keyadmin_user_password</name>
+-    <value></value>
+-    <property-type>PASSWORD</property-type>
+-    <display-name>Ranger KMS keyadmin user's password</display-name>
+-    <description>This is the keyadmin user password. Password should be minimum 10 characters with minimum one alphabet and one numeric. Unsupported special characters are &quot; &apos; &#92; &#96; &#180;.</description>
+-    <value-attributes>
+-      <type>password</type>
+-      <overridable>false</overridable>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_admin_max_heap_size</name>
+-    <value>1g</value>
+-    <display-name>Ranger Admin heap size.</display-name>
+-    <description>Ranger Admin maximum heap size limit.</description>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_usersync_max_heap_size</name>
+-    <value>1g</value>
+-    <display-name>Ranger Usersync max heap size.</display-name>
+-    <description>Ranger Usersync maximum heap size limit.</description>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
+-  <property>
+-    <name>ranger_tagsync_max_heap_size</name>
+-    <value>1g</value>
+-    <display-name>Ranger Tagsync max heap size.</display-name>
+-    <description>Ranger Tagsync maximum heap size limit.</description>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
++    <property>
++        <name>ranger_user</name>
++        <value>ranger</value>
++        <property-type>USER</property-type>
++        <display-name>Ranger User</display-name>
++        <description>Ranger username</description>
++        <value-attributes>
++            <type>user</type>
++            <overridable>false</overridable>
++            <user-groups>
++                <property>
++                    <type>ranger-env</type>
++                    <name>ranger_group</name>
++                </property>
++                <property>
++                    <type>cluster-env</type>
++                    <name>user_group</name>
++                </property>
++            </user-groups>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_group</name>
++        <value>ranger</value>
++        <property-type>GROUP</property-type>
++        <display-name>Ranger Group</display-name>
++        <description>Ranger group</description>
++        <value-attributes>
++            <type>user</type>
++            <overridable>false</overridable>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_admin_username</name>
++        <value>amb_ranger_admin</value>
++        <property-type>TEXT</property-type>
++        <display-name>Ranger Admin username for Ambari</display-name>
++        <description>This is the ambari user created for creating repositories and policies in Ranger Admin for each
++            plugin
++        </description>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property require-input="true">
++        <name>ranger_admin_password</name>
++        <value/>
++        <property-type>PASSWORD</property-type>
++        <display-name>Ranger Admin user's password for Ambari</display-name>
++        <description>This is the ambari user password created for creating repositories and policies in Ranger Admin for
++            each plugin. Password should be minimum 10 characters with minimum one alphabet and one numeric. Unsupported
++            special characters are &quot; &apos; &#92; &#96; &#180;.
++        </description>
++        <value-attributes>
++            <type>password</type>
++            <overridable>false</overridable>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>admin_username</name>
++        <value>admin</value>
++        <display-name>Ranger Admin username</display-name>
++        <description>This is the username for default admin user that is used for creating ambari user in Ranger Admin
++        </description>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property require-input="true">
++        <name>admin_password</name>
++        <value></value>
++        <property-type>PASSWORD</property-type>
++        <display-name>Ranger Admin user's password</display-name>
++        <description>This is the password for default admin user that is used for creating ambari user in Ranger Admin.
++            Password should be minimum 10 characters with minimum one alphabet and one numeric. Unsupported special
++            characters are &quot; &apos; &#92; &#96; &#180;.
++        </description>
++        <value-attributes>
++            <type>password</type>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_pid_dir</name>
++        <display-name>Ranger PID Dir</display-name>
++        <value>/var/run/ranger</value>
++        <description/>
++        <value-attributes>
++            <type>directory</type>
++            <overridable>false</overridable>
++            <editable-only-at-install>true</editable-only-at-install>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-hdfs-plugin-enabled</name>
++        <value>No</value>
++        <display-name>HDFS Ranger Plugin</display-name>
++        <description>Enable HDFS Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-hive-plugin-enabled</name>
++        <value>No</value>
++        <display-name>Hive Ranger Plugin</display-name>
++        <description>Enable Hive Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-hbase-plugin-enabled</name>
++        <value>No</value>
++        <display-name>Hbase Ranger Plugin</display-name>
++        <description>Enable HBase Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-storm-plugin-enabled</name>
++        <value>No</value>
++        <display-name>Storm Ranger Plugin</display-name>
++        <description>Enable Storm Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-knox-plugin-enabled</name>
++        <value>No</value>
++        <display-name>Knox Ranger Plugin</display-name>
++        <description>Enable Knox Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>xml_configurations_supported</name>
++        <value>true</value>
++        <description/>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>create_db_dbuser</name>
++        <value>true</value>
++        <display-name>Setup Database and Database User</display-name>
++        <description>If set to Yes, Ambari will create and setup Ranger Database and Database User. This will require to
++            specify Database Admin user and password
++        </description>
++        <value-attributes>
++            <type>value-list</type>
++            <overridable>false</overridable>
++            <entries>
++                <entry>
++                    <value>true</value>
++                    <label>Yes</label>
++                </entry>
++                <entry>
++                    <value>false</value>
++                    <label>No</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_privelege_user_jdbc_url</name>
++        <display-name>JDBC connect string for root user</display-name>
++        <description>JDBC connect string - auto populated based on other values. This is to be used by root user
++        </description>
++        <value>jdbc:mysql://localhost</value>
++        <value-attributes>
++            <overridable>false</overridable>
++        </value-attributes>
++        <depends-on>
++            <property>
++                <type>admin-properties</type>
++                <name>DB_FLAVOR</name>
++            </property>
++            <property>
++                <type>admin-properties</type>
++                <name>db_host</name>
++            </property>
++        </depends-on>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-yarn-plugin-enabled</name>
++        <value>No</value>
++        <display-name>YARN Ranger Plugin</display-name>
++        <description>Enable YARN Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-kafka-plugin-enabled</name>
++        <value>No</value>
++        <display-name>Kafka Ranger Plugin</display-name>
++        <description>Enable Kafka Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>xasecure.audit.destination.solr</name>
++        <value>true</value>
++        <display-name>Audit to Solr</display-name>
++        <description>Enable Audit to Solr for all ranger supported services. This property is overridable at service
++            level
++        </description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>true</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>false</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>is_solrCloud_enabled</name>
++        <display-name>SolrCloud</display-name>
++        <description>SolrCloud uses zookeeper for distributed search and indexing</description>
++        <value>true</value>
++        <value-attributes>
++            <type>value-list</type>
++            <overridable>false</overridable>
++            <entries>
++                <entry>
++                    <value>true</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>false</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++            <empty-value-valid>true</empty-value-valid>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>xasecure.audit.destination.hdfs</name>
++        <value>true</value>
++        <display-name>Audit to HDFS</display-name>
++        <description>Enable Audit to HDFS for all ranger supported services. This property is overridable at service
++            level
++        </description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>true</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>false</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>xasecure.audit.destination.hdfs.dir</name>
++        <value>hdfs://localhost:8020</value>
++        <display-name>Destination HDFS Directory</display-name>
++        <description>HDFS folder to write audit to, make sure all service user has required permissions. This property
++            is overridable at service level
++        </description>
++        <depends-on>
++            <property>
++                <type>core-site</type>
++                <name>fs.defaultFS</name>
++            </property>
++        </depends-on>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_solr_config_set</name>
++        <value>ranger_audits</value>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_solr_collection_name</name>
++        <value>ranger_audits</value>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_solr_shards</name>
++        <value>1</value>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_solr_replication_factor</name>
++        <value>1</value>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-atlas-plugin-enabled</name>
++        <value>No</value>
++        <display-name>Atlas Ranger Plugin</display-name>
++        <description>Enable Atlas Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>is_external_solrCloud_enabled</name>
++        <display-name>External SolrCloud</display-name>
++        <value>false</value>
++        <description>Using Externally managed solr cloud ?</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>true</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>false</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>is_external_solrCloud_kerberos</name>
++        <display-name>External SolrCloud kerberos</display-name>
++        <value>false</value>
++        <description>Is Externally managed solr cloud kerberos ?</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>true</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>false</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger-nifi-plugin-enabled</name>
++        <value>No</value>
++        <display-name>NIFI Ranger Plugin</display-name>
++        <description>Enable NIFI Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>is_nested_groupsync_enabled</name>
++        <display-name>Sync Nested Groups</display-name>
++        <description/>
++        <value>false</value>
++        <value-attributes>
++            <type>value-list</type>
++            <overridable>false</overridable>
++            <entries>
++                <entry>
++                    <value>true</value>
++                    <label>Yes</label>
++                </entry>
++                <entry>
++                    <value>false</value>
++                    <label>No</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++            <empty-value-valid>true</empty-value-valid>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>content</name>
++        <display-name>ranger-env template</display-name>
++        <description>This is the jinja template for Ranger env</description>
++        <value/>
++        <property-type>VALUE_FROM_PROPERTY_FILE</property-type>
++        <value-attributes>
++            <property-file-name>ranger-env.sh.j2</property-file-name>
++            <property-file-type>text</property-file-type>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property require-input="true">
++        <name>rangerusersync_user_password</name>
++        <value></value>
++        <property-type>PASSWORD</property-type>
++        <display-name>Ranger Usersync user's password</display-name>
++        <description>This is the rangerusersync user password. Password should be minimum 10 characters with minimum one
++            alphabet and one numeric. Unsupported special characters are &quot; &apos; &#92; &#96; &#180;.
++        </description>
++        <value-attributes>
++            <type>password</type>
++            <overridable>false</overridable>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property require-input="true">
++        <name>rangertagsync_user_password</name>
++        <value></value>
++        <property-type>PASSWORD</property-type>
++        <display-name>Ranger Tagsync user's password</display-name>
++        <description>This is the rangertagsync user password. Password should be minimum 10 characters with minimum one
++            alphabet and one numeric. Unsupported special characters are &quot; &apos; &#92; &#96; &#180;.
++        </description>
++        <value-attributes>
++            <type>password</type>
++            <overridable>false</overridable>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property require-input="true">
++        <name>keyadmin_user_password</name>
++        <value></value>
++        <property-type>PASSWORD</property-type>
++        <display-name>Ranger KMS keyadmin user's password</display-name>
++        <description>This is the keyadmin user password. Password should be minimum 10 characters with minimum one
++            alphabet and one numeric. Unsupported special characters are &quot; &apos; &#92; &#96; &#180;.
++        </description>
++        <value-attributes>
++            <type>password</type>
++            <overridable>false</overridable>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_admin_max_heap_size</name>
++        <value>1g</value>
++        <display-name>Ranger Admin heap size.</display-name>
++        <description>Ranger Admin maximum heap size limit.</description>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_usersync_max_heap_size</name>
++        <value>1g</value>
++        <display-name>Ranger Usersync max heap size.</display-name>
++        <description>Ranger Usersync maximum heap size limit.</description>
++        <on-ambari-upgrade add="false"/>
++    </property>
++    <property>
++        <name>ranger_tagsync_max_heap_size</name>
++        <value>1g</value>
++        <display-name>Ranger Tagsync max heap size.</display-name>
++        <description>Ranger Tagsync maximum heap size limit.</description>
++        <on-ambari-upgrade add="false"/>
++    </property>
+ 
+-  <property>
+-    <name>ranger-ozone-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>OZONE Ranger Plugin</display-name>
+-    <description>Enable OZONE Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
++    <property>
++        <name>ranger-ozone-plugin-enabled</name>
++        <value>No</value>
++        <display-name>OZONE Ranger Plugin</display-name>
++        <description>Enable OZONE Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
+ 
+-  <property>
+-    <name>ranger-spark-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>spark Ranger Plugin</display-name>
+-    <description>Enable spark Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
++    <property>
++        <name>ranger-spark-plugin-enabled</name>
++        <value>No</value>
++        <display-name>spark Ranger Plugin</display-name>
++        <description>Enable spark Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
+ 
+-  <property>
+-    <name>ranger-kudu-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>Kudu Ranger Plugin</display-name>
+-    <description>Enable Kudu Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
++    <property>
++        <name>ranger-kudu-plugin-enabled</name>
++        <value>No</value>
++        <display-name>Kudu Ranger Plugin</display-name>
++        <description>Enable Kudu Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
+ 
+- <property>
+-    <name>ranger-doris-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>Doris Ranger Plugin</display-name>
+-    <description>Enable Doris Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
++    <property>
++        <name>ranger-doris-plugin-enabled</name>
++        <value>No</value>
++        <display-name>Doris Ranger Plugin</display-name>
++        <description>Enable Doris Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
+ 
+-  <property>
+-    <name>ranger-trino-plugin-enabled</name>
+-    <value>No</value>
+-    <display-name>TRINO Ranger Plugin</display-name>
+-    <description>Enable TRINO Ranger plugin</description>
+-    <value-attributes>
+-      <overridable>false</overridable>
+-      <type>value-list</type>
+-      <entries>
+-        <entry>
+-          <value>Yes</value>
+-          <label>ON</label>
+-        </entry>
+-        <entry>
+-          <value>No</value>
+-          <label>OFF</label>
+-        </entry>
+-      </entries>
+-      <selection-cardinality>1</selection-cardinality>
+-    </value-attributes>
+-    <on-ambari-upgrade add="false"/>
+-  </property>
++    <property>
++        <name>ranger-trino-plugin-enabled</name>
++        <value>No</value>
++        <display-name>TRINO Ranger Plugin</display-name>
++        <description>Enable TRINO Ranger plugin</description>
++        <value-attributes>
++            <overridable>false</overridable>
++            <type>value-list</type>
++            <entries>
++                <entry>
++                    <value>Yes</value>
++                    <label>ON</label>
++                </entry>
++                <entry>
++                    <value>No</value>
++                    <label>OFF</label>
++                </entry>
++            </entries>
++            <selection-cardinality>1</selection-cardinality>
++        </value-attributes>
++        <on-ambari-upgrade add="false"/>
++    </property>
++
++    <property>
++        <name>ranger_spnego_ha_domain</name>
++        <value>ranger-ha.hadoop.com</value>
++        <display-name>Ranger SPNEGO HA Domain</display-name>
++        <description>
++            【TTBigdata 定制@since 2.2.3】
++            用于 Ranger Admin 高可用（VIP）场景下的 SPNEGO（HTTP Negotiate）Kerberos 认证域名。
++
++            配置说明：
++            - 仅填写 VIP 域名本身（不需要包含 "HTTP/"，也不需要包含 "@REALM"）；
++            - 系统将自动拼装 SPNEGO Principal：HTTP/&lt;VIP域名&gt;@&lt;REALM&gt;
++            例如：HTTP/ranger-ha.hadoop.com@TTBIGDATA.COM
++
++            使用场景：
++            - Ranger Admin 通过 VIP 对外提供访问入口（浏览器 / curl --negotiate / 其他客户端）；
++            - 避免 HA 主备切换后因主机名变化导致的 SPNEGO Principal 不匹配。
++
++            注意事项：
++            - 该域名必须可解析到 Ranger Admin 的 VIP（或前置负载均衡）；
++            - 若修改该值，需要同步更新 KDC 中对应的 HTTP principal 与 keytab，并在所有 Ranger Admin 节点保持一致。
++        </description>
++        <on-ambari-upgrade add="true"/>
++    </property>
++
+ </configuration>
+Index: ambari-server/src/main/java/org/apache/ambari/server/scheduler/ExecutionScheduleManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ambari-server/src/main/java/org/apache/ambari/server/scheduler/ExecutionScheduleManager.java b/ambari-server/src/main/java/org/apache/ambari/server/scheduler/ExecutionScheduleManager.java
+--- a/ambari-server/src/main/java/org/apache/ambari/server/scheduler/ExecutionScheduleManager.java	(revision c9f06dd98daa0e6cdf5287cf7c008eb4242da066)
++++ b/ambari-server/src/main/java/org/apache/ambari/server/scheduler/ExecutionScheduleManager.java	(date 1771340801219)
+@@ -733,26 +733,73 @@
+ 
+   private BatchRequestResponse convertToBatchRequestResponse(Response clientResponse) {
+     BatchRequestResponse batchRequestResponse = new BatchRequestResponse();
+-    int retCode = clientResponse.getStatus();
+ 
++    // 0) NULL 保护：避免 performApiRequest / performApiGetRequest 异常时 response=null 导致 NPE
++    if (clientResponse == null) {
++      LOG.error("Ambari API response is NULL (clientResponse == null)");
++      batchRequestResponse.setReturnCode(500);
++      batchRequestResponse.setStatus(HostRoleStatus.FAILED.toString());
++      batchRequestResponse.setReturnMessage("Null response from Ambari API call");
++      return batchRequestResponse;
++    }
++
++    // 1) HTTP status
++    final int retCode = clientResponse.getStatus();
+     batchRequestResponse.setReturnCode(retCode);
+ 
+-    String responseString = (String) clientResponse.getEntity();
+-    LOG.debug("Processing API response: status={}, body={}", retCode, responseString);
++    // 2) Read response body safely (Jersey 2.x correct way)
++    String responseString = "";
++    try {
++      if (clientResponse.hasEntity()) {
++        responseString = clientResponse.readEntity(String.class);
++        if (responseString == null) {
++          responseString = "";
++        }
++      }
++    } catch (Exception ex) {
++      // 不要让异常继续冒泡，否则会把 scheduler chain 直接打断
++      LOG.warn("Failed to read Ambari API response entity as String. status={}", retCode, ex);
++      responseString = "";
++    }
++
++    // 3) Debug print raw response (safe truncate)
++    if (LOG.isDebugEnabled()) {
++      final int MAX_LEN = 8192; // 8KB 够看结构，避免刷屏
++      String bodyPreview = responseString;
++      if (bodyPreview.length() > MAX_LEN) {
++        bodyPreview = bodyPreview.substring(0, MAX_LEN) + "...[truncated, total=" + responseString.length() + "]";
++      }
++
++      String mediaType = "null";
++      try {
++        if (clientResponse.getMediaType() != null) {
++          mediaType = clientResponse.getMediaType().toString();
++        }
++      } catch (Exception ignore) {
++      }
++
++      LOG.debug("Ambari API raw response: httpStatus={}, contentType={}, length={}\n{}", retCode, mediaType, responseString.length(), bodyPreview);
++    }
++
++    // 4) Parse JSON (keep original semantics)
+     Map<String, Object> httpResponseMap;
+     try {
+       httpResponseMap = gson.<Map<String, Object>>fromJson(responseString, Map.class);
+-      LOG.debug("Processing responce as JSON");
++      LOG.debug("Processing response as JSON");
+     } catch (JsonSyntaxException e) {
+       LOG.debug("Response is not valid JSON object. Recording as is");
+       httpResponseMap = new HashMap<>();
+       httpResponseMap.put("message", responseString);
++    } catch (Exception e) {
++      LOG.warn("Unexpected exception while parsing response JSON. status={}", retCode, e);
++      httpResponseMap = new HashMap<>();
++      httpResponseMap.put("message", responseString);
+     }
+ 
+-
++    // 5) Convert to BatchRequestResponse (same logic as your original)
+     if (retCode < 300) {
+-      if (httpResponseMap == null) {
+-        //Empty response on successful scenario
++      if (httpResponseMap == null || httpResponseMap.isEmpty()) {
++        // Empty response on successful scenario
+         batchRequestResponse.setStatus(HostRoleStatus.COMPLETED.toString());
+         return batchRequestResponse;
+       }
+@@ -764,45 +811,78 @@
+       }
+ 
+       if (requestMap != null) {
+-        batchRequestResponse.setRequestId((
+-          (Double) requestMap.get(REQUESTS_ID_KEY)).longValue());
+-        //TODO fix different names for field
++        // requestId
++        Object idObj = requestMap.get(REQUESTS_ID_KEY);
++        if (idObj instanceof Double) {
++          batchRequestResponse.setRequestId(((Double) idObj).longValue());
++        } else if (idObj instanceof Number) {
++          batchRequestResponse.setRequestId(((Number) idObj).longValue());
++        } else if (idObj != null) {
++          try {
++            batchRequestResponse.setRequestId(Long.parseLong(idObj.toString()));
++          } catch (Exception ignore) {
++          }
++        }
++
++        // status: request_status or status
+         String status = null;
+-        if (requestMap.get(REQUESTS_STATUS_KEY) != null) {
+-          status = requestMap.get(REQUESTS_STATUS_KEY).toString();
++        Object statusObj = requestMap.get(REQUESTS_STATUS_KEY);
++        if (statusObj != null) {
++          status = statusObj.toString();
+         }
+-        if (requestMap.get("status") != null) {
+-          status = requestMap.get("status").toString();
++        Object status2Obj = requestMap.get("status");
++        if (status2Obj != null) {
++          status = status2Obj.toString();
+         }
+ 
+-        if (requestMap.get(REQUESTS_ABORTED_TASKS_KEY) != null) {
+-          batchRequestResponse.setAbortedTaskCount(
+-            ((Double) requestMap.get(REQUESTS_ABORTED_TASKS_KEY)).intValue());
++        // aborted/failed/timedout/total task counts
++        Object abortedObj = requestMap.get(REQUESTS_ABORTED_TASKS_KEY);
++        if (abortedObj instanceof Double) {
++          batchRequestResponse.setAbortedTaskCount(((Double) abortedObj).intValue());
++        } else if (abortedObj instanceof Number) {
++          batchRequestResponse.setAbortedTaskCount(((Number) abortedObj).intValue());
+         }
+-        if (requestMap.get(REQUESTS_FAILED_TASKS_KEY) != null) {
+-          batchRequestResponse.setFailedTaskCount(
+-            ((Double) requestMap.get(REQUESTS_FAILED_TASKS_KEY)).intValue());
++
++        Object failedObj = requestMap.get(REQUESTS_FAILED_TASKS_KEY);
++        if (failedObj instanceof Double) {
++          batchRequestResponse.setFailedTaskCount(((Double) failedObj).intValue());
++        } else if (failedObj instanceof Number) {
++          batchRequestResponse.setFailedTaskCount(((Number) failedObj).intValue());
+         }
+-        if (requestMap.get(REQUESTS_TIMEDOUT_TASKS_KEY) != null) {
+-          batchRequestResponse.setTimedOutTaskCount(
+-            ((Double) requestMap.get(REQUESTS_TIMEDOUT_TASKS_KEY)).intValue());
++
++        Object timedoutObj = requestMap.get(REQUESTS_TIMEDOUT_TASKS_KEY);
++        if (timedoutObj instanceof Double) {
++          batchRequestResponse.setTimedOutTaskCount(((Double) timedoutObj).intValue());
++        } else if (timedoutObj instanceof Number) {
++          batchRequestResponse.setTimedOutTaskCount(((Number) timedoutObj).intValue());
+         }
+-        if (requestMap.get(REQUESTS_TOTAL_TASKS_KEY) != null) {
+-          batchRequestResponse.setTotalTaskCount(
+-            ((Double) requestMap.get(REQUESTS_TOTAL_TASKS_KEY)).intValue());
++
++        Object totalObj = requestMap.get(REQUESTS_TOTAL_TASKS_KEY);
++        if (totalObj instanceof Double) {
++          batchRequestResponse.setTotalTaskCount(((Double) totalObj).intValue());
++        } else if (totalObj instanceof Number) {
++          batchRequestResponse.setTotalTaskCount(((Number) totalObj).intValue());
+         }
++
+         batchRequestResponse.setStatus(status);
++      } else {
++        // Success but no "Requests" block
++        batchRequestResponse.setStatus(HostRoleStatus.COMPLETED.toString());
+       }
+ 
+     } else {
+-      //unsuccessful response
+-      batchRequestResponse.setReturnMessage((String) httpResponseMap.get("message"));
++      // Unsuccessful response
++      Object msg = (httpResponseMap != null) ? httpResponseMap.get("message") : null;
++      String msgStr = (msg != null) ? msg.toString() : responseString;
++
++      batchRequestResponse.setReturnMessage(msgStr);
+       batchRequestResponse.setStatus(HostRoleStatus.FAILED.toString());
+     }
+ 
+     return batchRequestResponse;
+   }
+ 
++
+   public String getBatchRequestStatus(Long executionId, String clusterName) throws AmbariException {
+     Cluster cluster = clusters.getCluster(clusterName);
+     RequestExecution requestExecution = cluster.getAllRequestExecutions().get(executionId);

@@ -34,6 +34,7 @@ patch_files=(
    # 2.2.3
   "/scripts/build/ambari3/common/patch2_2_3/patch0-FIRST-OPTI.diff"
   "/scripts/build/ambari3/common/patch2_2_3/patch1-KNOX-OPTI-SUP.diff"
+  "/scripts/build/ambari3/common/patch2_2_3/patch2-FREEIPA-COMPONENT-SUP.diff"
 
 )
 

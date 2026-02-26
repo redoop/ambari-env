@@ -1,0 +1,21 @@
+[kylin-base]
+name=Kylin V10 SP3 - Base (via Nexus group)
+baseurl=http://172.20.0.2:8081/repository/yum-public-kylinv10/os/adv/lic/base/$basearch/
+enabled=1
+gpgcheck=0
+metadata_expire=6h
+
+[kylin-updates]
+name=Kylin V10 SP3 - Updates (via Nexus group)
+baseurl=http://172.20.0.2:8081/repository/yum-public-kylinv10/os/adv/lic/updates/$basearch/
+enabled=1
+gpgcheck=0
+metadata_expire=6h
+
+[epol]
+name=openEuler EPOL main (via Nexus group)
+baseurl=http://172.20.0.2:8081/repository/yum-public-kylinv10/EPOL/main/$basearch
+enabled=1
+gpgcheck=0
+countme=1
+metadata_expire=6h

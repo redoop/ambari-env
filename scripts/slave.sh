@@ -31,6 +31,6 @@ source /scripts/system/init/setup_build_env.sh
 source /scripts/util/write_ip.sh
 
 # start sshd server
-/usr/sbin/sshd -D
-#nohup /usr/sbin/sshd -D >>/dev/null 2>&1 &
+#/usr/sbin/sshd -D
+nohup /usr/sbin/sshd -D >>/dev/null 2>&1 &
 echo "sshd start over!!!!"

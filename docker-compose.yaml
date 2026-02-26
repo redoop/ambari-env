@@ -42,13 +42,16 @@ services:
       - "12345:12345"
     tty: true
     privileged: true
+    environment:
+      - http_proxy=http://127.0.0.1:7890
+      - https_proxy=http://127.0.0.1:7890
     volumes:
       - ./scripts:/scripts
       - ./common/etc/yum.repos.d:/etc/yum.repos.d
       - ./common/conf:/opt/modules/conf
       - ./common/data/mvn:/root/.m2
       - ./common/data/rpm-package:/data/rpm-package
-    entrypoint: /scripts/master.sh
+    #entrypoint: /scripts/master.sh
     depends_on:
       nexus:
         condition: service_healthy
@@ -147,17 +150,17 @@ services:
     container_name: rocky8
     hostname: rocky8
     ports:
-      - "85:80"
-      - "22223:22"
-      - "28080:8080"
-      - "16379:6379"
-      - "16380:6380"
-      - "16381:6381"
-      - "16382:6382"
-      - "16383:6383"
-      - "16384:6384"
-      - "12181:2181"
-      - "12345:12345"
+      - "86:80"
+      - "22225:22"
+      - "58080:8080"
+      - "56379:6379"
+      - "56380:6380"
+      - "56381:6381"
+      - "56382:6382"
+      - "56383:6383"
+      - "56384:6384"
+      - "52181:2181"
+      - "52345:12345"
     tty: true
     privileged: true
     volumes:
@@ -166,7 +169,7 @@ services:
       - ./common/conf:/opt/modules/conf
       - ./common/data/mvn:/root/.m2
       - ./common/data/rpm-package:/data/rpm-package
-    entrypoint: /scripts/master_rocky8.sh
+#    entrypoint: /scripts/master_rocky8.sh
     depends_on:
       nexus:
         condition: service_healthy

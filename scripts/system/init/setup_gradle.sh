@@ -104,6 +104,9 @@ check_and_download_gradle() {
 }
 
 main() {
+
+  rm -rf $ZIP_LOCK
+  
   check_and_download_gradle
 
   if [ -d "$GRADLE_HOME_PATH" ]; then

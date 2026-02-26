@@ -39,6 +39,9 @@ source /scripts/system/init/setup_github_code.sh
 #处理r环境
 source /scripts/system/init/rocky8/setup_r_env.sh
 
+#处理编译环境
+source /scripts/system/init/rocky8/setup_build_env.sh
+
 #处理虚拟环境
 source /scripts/system/init/setup_virtual_env.sh
 
@@ -46,6 +49,6 @@ source /scripts/system/init/setup_virtual_env.sh
 source /scripts/util/write_ip.sh
 
 # start sshd server
-/usr/sbin/sshd -D
-#nohup /usr/sbin/sshd -D >>/dev/null 2>&1 &
+#/usr/sbin/sshd -D
+nohup /usr/sbin/sshd -D >>/dev/null 2>&1 &
 echo "sshd start over!!!!"

@@ -30,6 +30,7 @@ echo $NEXUS_URL
 PROJECT_PATH="/opt/modules/bigtop"
 RPM_PACKAGE="/data/rpm-package/bigtop"
 mkdir -p "$RPM_PACKAGE"
+mkdir -p "$PROJECT_PATH"
 
 
 
@@ -57,9 +58,27 @@ bash /scripts/build/bigtop/build1_0_6.sh
 echo "1.0.7 补丁"
 bash /scripts/build/bigtop/build1_0_7.sh
 
-
-# 开启 gcc 高版本
-source /opt/rh/devtoolset-7/enable
+# 检测操作系统并执行相应的设置脚本
+if [ -f /etc/os-release ]; then
+  . /etc/os-release
+  OS_NAME=$ID
+  OS_VERSION=$VERSION_ID
+  
+  echo "检测到操作系统: $OS_NAME $OS_VERSION"
+  
+  if [[ "$OS_NAME" == "rocky" && "$OS_VERSION" =~ ^8 ]]; then
+    # 开启 gcc 高版本 (GCC Toolset 11)
+    source /opt/rh/gcc-toolset-11/enable
+  elif [[ "$OS_NAME" == "kylin" && "$OS_VERSION" =~ ^V10 ]]; then
+    echo "Kylin V10 系统"
+  else
+    # 开启 gcc 高版本 (DevToolset 7)
+    source /opt/rh/devtoolset-7/enable
+  fi
+else
+  # 开启 gcc 高版本 (DevToolset 7)
+  source /opt/rh/devtoolset-7/enable
+fi
 
 cd "$PROJECT_PATH"
 
@@ -107,11 +126,29 @@ ALL_COMPONENTS=(
   superset-download
 )
 
-# 编译所有组件
-gradle "${ALL_COMPONENTS[@]}" \
+# 判断是否传入参数
+if [ $# -gt 0 ]; then
+  # 如果传入参数，使用传入的组件列表
+  COMPONENTS_TO_BUILD=("$@")
+  echo "编译指定组件: ${COMPONENTS_TO_BUILD[*]}"
+else
+  # 如果没有传入参数，编译所有组件
+  COMPONENTS_TO_BUILD=("${ALL_COMPONENTS[@]}")
+  echo "编译所有组件"
+fi
+
+# 编译组件
+echo "开始编译组件: ${COMPONENTS_TO_BUILD[*]}"
+if gradle "${COMPONENTS_TO_BUILD[@]}" \
   -PparentDir=/usr/bigtop \
   -Dbuildwithdeps=true \
-  -PpkgSuffix -d
+  -PpkgSuffix -d; then
+  echo "Gradle 构建成功"
+else
+  echo "ERROR: Gradle 构建失败，退出码: $?"
+  echo "请检查上面的错误日志，或使用 --info 参数查看详细信息"
+  exit 1
+fi
 
 
 # 遍历 output 目录下的每个子目录
@@ -123,8 +160,12 @@ for dir in "$PROJECT_PATH"/output/*; do
         # 创建目标目录
         mkdir -p "$RPM_PACKAGE/$component"
 
-        # 查找并复制文件
-        find "$dir" -iname '*.rpm' -not -iname '*.src.rpm' -exec cp -rv {} "$RPM_PACKAGE/$component" \;
+        # 查找并复制文件（使用 || true 避免 find 没找到文件时导致脚本失败）
+        find "$dir" -iname '*.rpm' -not -iname '*.src.rpm' -exec cp -rv {} "$RPM_PACKAGE/$component" \; || true
+        
+        # 输出复制结果
+        rpm_count=$(find "$RPM_PACKAGE/$component" -iname '*.rpm' 2>/dev/null | wc -l)
+        echo "组件 $component: 复制了 $rpm_count 个 RPM 包"
     fi
 done
 

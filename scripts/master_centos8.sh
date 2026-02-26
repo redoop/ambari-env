@@ -38,7 +38,7 @@ source /scripts/system/init/setup_ivy_ant.sh
 source /scripts/system/init/setup_github_code.sh
 
 #处理编译环境
-source /scripts/system/init/setup_build_env.sh
+source /scripts/system/init/centos8/setup_build_env.sh
 
 #处理虚拟环境
 source /scripts/system/init/setup_virtual_env.sh

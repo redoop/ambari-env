@@ -58,11 +58,11 @@ name=YUM Public Repository (CentOS 7 EPEL)
 baseurl=http://$1:8081/repository/yum-public/\$releasever/\$basearch/
 enabled=1
 gpgcheck=0
-[yum-public-mariadb]
-name=YUM Public Repository (CentOS 7 MariaDB)
-baseurl=http://$1:8081/repository/yum-public/yum/10.11.10/centos7-amd64/
-enabled=1
-gpgcheck=0
+#[yum-public-mariadb]
+#name=YUM Public Repository (CentOS 7 MariaDB)
+#baseurl=http://$1:8081/repository/yum-public/yum/10.11.15/centos7-amd64/
+#enabled=1
+#gpgcheck=0
 EOF
 }
 
@@ -195,7 +195,7 @@ rm_init_repos() {
       echo "repo 文件已写入，正在初始化 CentOS 7 repo ..."
       init_centos7
       ;;
-    rockylinux_8* | rocky_8* | almalinux_8* )
+    centos_8* | rhel_8* | rockylinux_8* | rocky_8* | almalinux_8* )
       write_repo_rocky8 "$NEXUS_IP"
       echo "repo 文件已写入，正在初始化 Rocky 8 repo ..."
       init_rocky8

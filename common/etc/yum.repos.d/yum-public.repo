@@ -1,40 +1,30 @@
-[yum-public-base]
-name=YUM Public Repository (CentOS 7)
-baseurl=http://172.20.0.2:8081/repository/yum-public/$releasever/os/$basearch/
-enabled=1
+[rocky-baseos]
+name=Rocky Linux $releasever - BaseOS
+baseurl=http://172.20.0.2:8081/repository/rocky8-mirrors/$releasever/BaseOS/$basearch/os/
 gpgcheck=0
-[yum-public-update]
-name=YUM Public Repository (CentOS 7)
-baseurl=http://172.20.0.2:8081/repository/yum-public/$releasever/updates/$basearch/
 enabled=1
+
+[rocky-appstream]
+name=Rocky Linux $releasever - AppStream
+baseurl=http://172.20.0.2:8081/repository/rocky8-mirrors/$releasever/AppStream/$basearch/os/
 gpgcheck=0
-[yum-public-extras]
-name=YUM Public Repository (CentOS 7)
-baseurl=http://172.20.0.2:8081/repository/yum-public/$releasever/extras/$basearch/
 enabled=1
+
+[rocky-extras]
+name=Rocky Linux $releasever - Extras
+baseurl=http://172.20.0.2:8081/repository/rocky8-mirrors/$releasever/extras/$basearch/os/
 gpgcheck=0
-[yum-public-centosplus]
-name=YUM Public Repository (CentOS 7)
-baseurl=http://172.20.0.2:8081/repository/yum-public/$releasever/centosplus/$basearch/
 enabled=1
+
+[rocky-epel]
+name=EPEL for Rocky Linux $releasever - $basearch
+baseurl=http://172.20.0.2:8081/repository/rocky8-epel/epel/$releasever/Everything/$basearch/
 gpgcheck=0
-[yum-public-scl]
-name=YUM Public Repository (CentOS 7 SCL)
-baseurl=http://172.20.0.2:8081/repository/yum-public/7.9.2009/sclo/$basearch/sclo/
 enabled=1
+
+[rocky-powertools]
+name=Rocky Linux $releasever - PowerTools
+baseurl=http://172.20.0.2:8081/repository/rocky8-mirrors/$releasever/PowerTools/$basearch/os/
 gpgcheck=0
-[yum-public-scl-rh]
-name=YUM Public Repository (CentOS 7 SCL-RH)
-baseurl=http://172.20.0.2:8081/repository/yum-public/7.9.2009/sclo/$basearch/rh/
 enabled=1
-gpgcheck=0
-[yum-public-epel]
-name=YUM Public Repository (CentOS 7 EPEL)
-baseurl=http://172.20.0.2:8081/repository/yum-public/$releasever/$basearch/
-enabled=1
-gpgcheck=0
-[yum-public-mariadb]
-name=YUM Public Repository (CentOS 7 MariaDB)
-baseurl=http://172.20.0.2:8081/repository/yum-public/yum/10.11.10/centos7-amd64/
-enabled=1
-gpgcheck=0
+

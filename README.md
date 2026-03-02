@@ -18,137 +18,114 @@
 
 ## 最新公告
 
-### 🚀 ambari-env 2.2.2 正式发布
+# Ambari Plus 2.2.3 更新说明｜i18n 与企业级安全链路增强
 
-**一次迟到，但不敷衍的版本升级**
+大家好，我是小饕。
 
-大家好，我是 **小饕**。
+当前最新版本为 **2.2.3**。 本次发布提供两种安装包，基础功能一致，仅分发形式不同。
+同时，我们的定制版本正式更名为：
 
-先向大家正式道个歉 🙇‍♂️
-**ambari-env 2.2.2** 原计划在 **2025 年 12 月底发布**，但最终还是选择了延期。
+**Ambari Plus**
 
-延期不是因为“没做完”，而是因为：
+这个版本的定位依然很明确 ——
+在 Ambari 基础上做增强，专注企业安全场景与实际部署问题的修正。
 
-> **我不太想交付一个“能跑，但不稳”的版本。**
+下面是本次版本的主要内容。
 
-在反复验证、回滚、重构之后，今天，这个版本终于可以和大家正式见面了。
+## 一、i18n 国际化支持
 
-### 📦 本次正式发布的版本
+![image-20260302210154232](https://img.janettr.com/49c877326649cad6e7e146cd9d101a17-4656e0.png)
 
-![image-20260112215819076](https://img.janettr.com/825d479c3326c72bb6c0be19b8654a4e-d5fbcc.png)
+本次完成前端 i18n 结构改造。
 
-![image-20260112215850671](https://img.janettr.com/bd3d32f55f5edcad3356a4c56fa8d3d6-c39e24.png)
+![image-20260302204551182](https://img.janettr.com/8e6476534c5908ab654546f715bae5f3-c2889e.png)
 
-![image-20260112215910114](https://img.janettr.com/ac7a79a0f67f9227badf4b01028fe918-2ca146.png)
+页面支持中英文切换：
 
-本次 **ambari-env 2.2.2**，已在以下环境中完成完整验证并正式发布：
+![image-20260302204933548](https://img.janettr.com/2b26a6d307ed3c81b724f6a31e488081-ab8275.png)
 
-* **Rocky Linux 8.10**
-* **Kylin v10**
-* **Ubuntu 22.04**
+本次改造包含：
 
-相较上一版本，我们不仅修复问题，更**新增了 3 个关键组件**，让整体能力真正补齐。
+- 文案抽离
+- 组件变量适配
+- 结构统一整理
 
-### ✨ 新增组件说明
+后续扩展其他语言会更方便。
 
-本次新增并正式支持的组件包括：
+## 二、深色主题
 
-* **Alluxio**
-* **Knox**
-* **Hue**
+新增两套深色主题。
 
-这三个组件并不是“为了凑数”，而是围绕一个明确目标：
+### 黑金
 
-> **在开启 Kerberos 的前提下，打通 Web UI 访问链路，让平台形成真正闭环。**
+![image-20260302205109937](https://img.janettr.com/cc184c0d105c779d7773253bc0207c63-a7d423.png)
 
-在 Kerberos 启用后，Knox 现在已经可以稳定代理各类组件 Web UI，
-**从访问、鉴权到可视化，终于完整走通了。**
+![image-20260302205733329](https://img.janettr.com/21d297f9684f181b30e9cbbb42a1385c-53d2d2.png)
 
-### 📋 具体更新清单
+![image-20260302205633793](https://img.janettr.com/eb5a3c37c1fcea98322df17d0da92ea8-fb4e64.png)
 
-#### 🆕 新增（Features）
+![image-20260302205538885](https://img.janettr.com/5944b69c8bdeabd3b836a17fea10f1b4-62bb0f.png)
 
-* `[feat]` 新增并适配 **Alluxio 2.9.4** 组件
-* `[feat]` 新增并适配 **Hue 4.11.0** 组件
-* `[feat]` 新增并适配 **Knox 2.1.0** 组件
-* `[feat]` 优化 **Trino** 默认配置，并对 Web UI 主题样式进行定制化调整
-* `[feat]` 深度改造 **Knox**
+### 翡翠绿
 
-    * 在 `home/default` 中新增对 **Trino 474** 版本的支持
-    * 补充 Trino 专属 Icon，提升页面识别度
+![image-20260302205143679](https://img.janettr.com/bc04eee5111aa77307507699f4c83fa3-936669.png)
 
-#### ⚙️ 优化（Optimized）
+![image-20260302205334905](https://img.janettr.com/b784b1fb0ee7f9e7754d8021373ce000-dfa6b3.png)
 
-* `[optimized]` 优化 **Hive 在 Kerberos + Ranger 强审计** 场景下
-  `managed` 表必须由 `hive` 用户操作的问题，现已支持 **自定义用户**
-* `[optimized]` 调整 **Hue 默认用户所属组策略**
-* `[optimized]` 兼容 **HBase 未安装** 场景，修复 Knox 安装阶段报错
-* `[optimized]` 优化 **Knox 默认转发规则**，减少冗余配置
-* `[optimized]` 丰富 **Knox Web 页面功能**
+![image-20260302205356334](https://img.janettr.com/26e7c19bd863f1371caaf54b0d2a7bb9-97f85c.png)
 
-    * 登出按钮
-    * 默认展开拓扑
-* `[optimized]` 优化 **ResourceManager HA** 场景下 Knox 代理重定向空白问题
-* `[optimized]` 修复 **Ranger** 环境下 **Impala** 用户默认缺失问题
-* `[optimized]` 安装阶段组件描述统一中文化并重新排序
-* `[optimized]` 优化 `nn_max_heapsize` 内存评估精度
-* `[optimized]` 新增 **Livy 自检等待时间** 配置项
-* `[optimized]` 调整 **Livy 默认 idle 时间** 为 **10 分钟**
-* `[optimized]` 优化多组件 **启停拓扑逻辑**
-* `[optimized]` 安装 **Hue** 时自动补齐 Hadoop Proxy 配置
+![image-20260302205446315](https://img.janettr.com/6d9638564ba512676323e92f1419e7aa-ed18df.png)
 
-#### 🐞 修复（Fix）
+# 本次完整更新清单
 
-* `[fix]` 修复 **Alluxio** 在 Ubuntu 系统下安装失败问题
-* `[fix]` 修复 **Kerberos 关闭 + Hadoop HA** 场景下 `service_check` 异常
-* `[fix]` 修复 **Ranger Admin 校验 Solr** 在 Ubuntu 下的管道阻塞问题
-* `[fix]` 修复 **Web UI 检查** 在 Python 3 环境下的兼容性问题
-* `[fix]` 修复 Kerberos 场景下 **Trino HTTPS / Web UI** 访问异常
-* `[fix]` 调整 **Livy Session** 默认存活时间为 **600000 ms**
-* `[fix]` 修复 **Spark Executor / History UI** 日志经 Knox 访问异常
-* `[fix]` 修复 **Standby NameNode** 场景下文件系统访问失效问题
-* `[fix]` 修复 **ResourceManager HA** 场景下 Knox 转发日志异常
+## 新增（Features）
 
-#### 🗑️ 移除（Delete）
+- `[feat]` 新增主题配色方案：**翡翠（Emerald）** 与 **黑金（Black & Gold）** 两套视觉主题，提升整体界面质感与可定制性
+- `[feat]` 全面支持 **i18n 国际化机制**，可按需扩展多语言环境，满足不同地区与客户部署需求
 
-* `[delete]` 暂时移除 **trino-plugin** 支持
-* `[delete]` 尝试性移除 **infra Solr** 组件
+## 优化（Optimizations）
 
-### 🧩 安装体验优化（新手更友好）
+- `[optimized]` 优化 **Hadoop DataNode 滚动重启** 异常处理逻辑，修复仅逐个重启导致效率低的问题，提升批量滚动重启稳定性与执行效率
+- `[optimized]` 增强 **FreeIPA 用户同步相关参数处理机制**，提升同步稳定性与可控性，适配复杂目录与权限场景
+- `[optimized]` 新增 **Ranger Security 日志级别控制权限**，支持按需调整安全日志输出粒度，便于审计与问题排查
+- `[optimized]` Ambari 全面增强对 **FreeIPA + Ranger 集成场景** 的授权与认证支持，优化统一身份与权限管理链路，提升企业级安全治理能力
+- `[optimized]` Kafka 默认开启 Ranger Plugin 时，自动补全策略必要参数
+- `[optimized]` 支持 Ranger 高可用自动生成 keytab 和 principal，也支持后期补全
+- `[optimized]` 支持 Ranger 2.4.0 基于 Haproxy 下的高可用部署
+- `[optimized]` HDFS 默认管理员组缺省值调整为 `hadoop`，解决 WebHDFS Logs 场景下使用 `admin` 用户仍无法访问的问题
+- `[optimized]` Hue 配置中增加默认启动用户与用户组，统一以 `hadoop` 组启动，避免因用户/组不一致导致的启动失败
+- `[optimized]` 默认创建 `admin` 用户与 `hadoop` 组，并建立绑定关系，降低初始化与权限配置复杂度
+- `[optimized]` ZooKeeper 3.5.9 启用扩展模式（Extended Mode），支持动态配置能力，提升 Ranger Admin 通讯与管理灵活性
+- `[optimized]` ZooKeeper 默认连接数相关参数内置，避免高并发访问场景下的隐式性能瓶颈
+- `[optimized]` 优化 Ranger Lookup 在快速输入场景下触发大量 timeout task 的问题，降低后台线程池压力
+- `[optimized]` Ranger Knox Plugin 调试完成，支持对 Knox Topology 下服务的策略拦截
+- `[optimized]` Ranger Admin 支持以客户端模式运行，并携带证书访问受保护服务
+- `[optimized]` Hue 增加主题样式渲染能力，提升 Web UI 展示效果与一致性
+- `[optimized]` Hue 优化组件日志级别控制，支持按需开启 Debug 级别日志
+- `[optimized]` 增强 Hue 配置解析逻辑，避免 SparkSQL 与 Beeswax 模块共用 Hive Principal 引发认证冲突
+- `[optimized]` Knox 启用 Kerberos 模式，并补充完整认证脚本，简化安全模式下的部署与验证流程
 
-![8fe0965499ee9e992dd57c843a14d7de](https://img.janettr.com/e3788ea147adca8a977b8f72eb8fbee5-3c41ad.jpg)
+## 修复（Fix）
 
-除了功能本身，这一版在**安装体验**上也做了明显优化：
-
-* 安装流程更清晰
-* 校验步骤更集中
-* 报错提示更可读
-* 新手也能顺着流程完成部署
-
-### 🔐 Knox 能力补充与扩展
-
-![image-20251231134637841](https://img.janettr.com/bed899ec1a0fa9189cd6d0e7433b6a99-6445ff.png)
-
-Knox 在本版本中，不再只是“能用”，而是：
-
-* 能代理更多组件
-* 能适配 Kerberos
-* 能处理 HA 场景
-* 能作为统一 Web 入口长期使用
-
-### 🛠️ 安装流程补充说明
-
-![image-20251231134728739](https://img.janettr.com/ab1e401b863a968eedf198aa2291ebc9-338cf9.png)
-
-![image-20251231134826597](https://img.janettr.com/ca00e6437bb0738d11d9418795ec844b-cb566e.png)
-
-针对部署过程中**最容易踩坑的节点**，我们补充了完整说明，避免“装到一半才发现问题”。
-
-### 📚 常见报错集中维护中
-
-![image-20251231135020087](https://img.janettr.com/b772d4a706156db329b06395b9ce3386-9bf4c7.png)
-
-目前常见报错已进入集中整理阶段，后续会持续补充文档与解决方案。
+- `[fix]` 修复 Kerberos 因 DNS 反解/主机名规范化导致的 principal 不匹配问题（禁用 rdns/canonicalize）
+- `[fix]` 修复前端安装组件过多时，滚动条不生效问题
+- `[fix]` 修复未开启 kerberos 状态下，Ranger admin 启动校验 zk 失败问题
+- `[fix]` 对 Ambari Metrics 监控组件高可用配置进行修改，目前已恢复正常
+- `[fix]` 修复 HBase 组件未安装场景下，无法在 Ranger 中创建对应策略的问题
+- `[fix]` 修复启用 Ranger Knox Plugin 后，与 Knox 包安装流程存在的冲突问题
+- `[fix]` 修复 `hive.tez.java.opts` 因换行符配置不当导致 Tez 引擎执行失败的问题
+- `[fix]` 修复 Knox 审计日志无法上传至 HDFS 的问题
+- `[fix]` 修复 `ranger-hdfs-plugin` 生成的 `cred.jceks` 为空文件的问题
+- `[fix]` 修复 `ranger-yarn-plugin` 生成的 `cred.jceks` 为空文件的问题
+- `[fix]` 修复 `ranger-hbase-plugin` 生成的 `cred.jceks` 为空文件的问题
+- `[fix]` 修复 `ranger-knox-plugin` 生成的 `cred.jceks` 为空文件的问题
+- `[fix]` 修复 `ranger-hive-plugin` 生成的 `cred.jceks` 为空文件的问题
+- `[fix]` 修复 Ranger 默认 Cookie Name 配置错误导致的认证异常问题
+- `[fix]` 修复 Hue 缺失用户家目录导致的启动异常问题
+- `[fix]` 修复 Atlas 在启用 Ranger 与 Kerberos 后，Kafka 权限配置不完整的问题
+- `[fix]` 修复 Atlas Kafka 策略中缺失 `ATLAS_HOOK` Topic 必要权限的问题
+- `[fix]` 修复 Atlas Kafka 策略中缺失 `consumer group = atlas` 授权的问题
+- `[fix]` 修复 Atlas 在安全模式下因缺失 `__AtlasUserProfile` 实体导致的访问异常问题
 
 ## 📚 项目简介
 
